@@ -52,8 +52,7 @@ https://www.gtk.org/docs/installations/windows/ <br>
 
 <h2><a name="Dependencies"> Dependencies </a></h2>
 <li> Matplotlib 
-  <code> python -m pip3 install -U pip<br>
-  python -m pip3 install -U matplotlib </code>
+  <code> pip3 install matplotlib </code>
 <li> Numpy
   <code> pip3 install numpy </code>
 <li> OpenCV
