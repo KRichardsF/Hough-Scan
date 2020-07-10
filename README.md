@@ -37,7 +37,7 @@ Application for detection and data extraction of circular objects, such as emuls
 https://www.gtk.org/docs/installations/windows/ <br>
   <li>Install all other dependencies <br>
   <li>Run via mysys2 terminal by navigating to Hough-Scan directory and run:
-  <code> Python houghscan.py </code> 
+  <code> Python3 houghscan.py </code> 
 </ul>
 
 <b> Option 2 Install via (WSL2)</b> 
@@ -52,12 +52,12 @@ https://www.gtk.org/docs/installations/windows/ <br>
 
 <h2><a name="Dependencies"> Dependencies </a></h2>
 <li> Matplotlib 
-  <code> python -m pip install -U pip<br>
-  python -m pip install -U matplotlib </code>
+  <code> python -m pip3 install -U pip<br>
+  python -m pip3 install -U matplotlib </code>
 <li> Numpy
-  <code> pip install numpy </code>
+  <code> pip3 install numpy </code>
 <li> OpenCV
-  <code>pip install opencv-python</code>
+  <code>pip3 install opencv-python</code>
   
 <h2><a name="User Guide"> User Guide </a></h2>
 <img src="./Readme_Images/Screenshot.png" width="50%" height="50%">
