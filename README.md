@@ -89,6 +89,8 @@ https://www.gtk.org/docs/installations/windows/ <br>
 <p> Blur and Sobel are both kernel convolition processes. For each pixel in the image (red square) the neighbouring pixels (green square) are added using a weighting which is determined by the kernel (3x3 matrix - greek letters in this case). The output is then often normalised. </p>
 <img src="./Readme_Images/Kernel_Convolution.png" width="50%" height="50%">
 
+<p> ### UNDER CONSTRUCTION ### </p>
+
 <h2><a name="Changelog"> Changelog </a></h2>
 <ul>
   <li> 8JUL20: uploaded early dev build
