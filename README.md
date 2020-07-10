@@ -1,7 +1,7 @@
 <img src="Houghscan Icon.svg" width="15%" height="15%"><h1> Hough Scan </h1> 
 
 <p align="left">
-Application for detection and data extraction of circular objects, such as emulstion droplets, from microscopy images
+Application for detection and data extraction of circular objects, such as emulsion droplets, from microscopy images
   </p>
   
 <h3> Contenets </h3>
@@ -83,9 +83,11 @@ https://www.gtk.org/docs/installations/windows/ <br>
 
 <h2><a name="Theory"> Theory </a></h2>
   <p align="left">
-  Hough Scan uses the following processes on an image ##UNDER CONSTRUCTION##
+  Hough Scan uses the following techniques to process an image: greyscale conversion, blur, sobel operation and canny edge detection followed by the circle hough transform.
   </p>
-<img src="./Readme_Images/Sobel.png" width="50%" height="50%">
+<h3> Kernel Convolution </h3>
+<p> Blur and Sobel are both kernel convolition processes. For each pixel in the image (red square) the neighbouring pixels (green square) are added using a weighting which is determined by the kernel (3x3 matrix - greek letters in this case). The output is then often normalised. </p>
+<img src="./Readme_Images/Kernel_Convolution.png" width="50%" height="50%">
 
 <h2><a name="Changelog"> Changelog </a></h2>
 <ul>
