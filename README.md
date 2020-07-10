@@ -10,19 +10,22 @@ Application for detection and data extraction of circular objects, such as emuls
   <li><a href=""> Dependencies
   <li><a href=""> User Guide
   <li><a href="#Theory"> Theory
+    </ul>
   
   
- <h2><a name="Installation"> Installation (Developer Build)</a></h2>
-  <p align="left">    
+<h2><a name="Installation"> Installation (Developer Build)</a></h2>
+ 
 
-  <h3> linux </h3>
-  <ul>
+<h3> linux </h3>
+ <ul>
 <li>Install dependencies.<br>
 <li>Navigate to Hough-Scan directory in terminal and run:
-  </p>
 <code> Python3 houghscan.py </code>
+</ul>
+
 <h3> Windows </h3>
 <p> Hough Scan is created using GTK3+ which cannot be installed via pip command used for other packages, as such there are two main options if you wish to access the developer build </p>
+
 
 <b> Option 1 (Install via MYSYS2) </b> 
 <ul>
@@ -30,17 +33,29 @@ Application for detection and data extraction of circular objects, such as emuls
 https://www.gtk.org/docs/installations/windows/ <br>
 <li>Install all other dependencies <br>
 <li>Run via mysys2 terminal by navigating to Hough-Scan directory and run:
-<code> Python3 houghscan.py </code>
+<code> Python houghscan.py </code> 
+</ul>
 
 <b> Option 2 Install via (WSL2)</b> 
 <ul>
-<li> Install WSL and install dependencies for linux distro. Guide: https://wiki.ubuntu.com/WSL <br>
+<li> Install WSL and linux distro of your choice. Guide: https://wiki.ubuntu.com/WSL <br>
 GUI support is comming in a future update (https://devblogs.microsoft.com/commandline/the-windows-subsystem-for-linux-build-2020-summary/#wsl-gui)
 but for now you will need to enable support via X server. (in more detail at https://wiki.ubuntu.com/WSL)<br>
 <li> Follow linux installation instructions.</p>
 <li> Navigate to Hough-Scan directory in terminal and run
-<code> Python3 houghscan.py </code>
+<code> Python houghscan.py </code>
+</ul>
 
+<h2><a name="Dependencies"> Dependencies </a></h2>
+<li> Matplotlib 
+<code> python -m pip install -U pip
+  python -m pip install -U matplotlib </code>
+<li> Numpy
+  <code> pip install numpy </code>
+<li> OpenCV
+  <code>pip install opencv-python</code>
+  
+ 
 <h2><a name="Theory"> Theory </a></h2>
   <p align="left">
 Hough Scan uses the following processes on an image
