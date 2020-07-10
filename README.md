@@ -17,19 +17,27 @@ Application for detection and data extraction of circular objects, such as emuls
 
   <h3> linux </h3>
   <p align="left">
-Install dependencies.
-Navigate to Hough-Scan directory in terminal and run
+Install dependencies.<br>
+Navigate to Hough-Scan directory in terminal and run:
   </p>
 <code> Python3 houghscan.py </code>
 <h3> Windows </h3>
-  <p align="left">
-  <b> Option 1 </b> 
-<p> Install via MYSYS2 </p>
-  <b> Option 2 </b> 
-<p>Install WSL and install dependencies for linux distro
-Guide: https://wiki.ubuntu.com/WSL
+<p> Hough Scan is created using GTK3+ which cannot be installed via pip command used for other packages, as such there are two main options if you wish to access the developer build </p>
+  <b> Option 1 (Install via MYSYS2) </b> 
+<p>
+Install Mysys2 and the packages required for GTK3+ by following the instructions here: <br>
+https://www.gtk.org/docs/installations/windows/ <br>
+Install all other dependencies <br>
+Run via mysys2 terminal by navigating to Hough-Scan directory and run: </p>
+<code> Python3 houghscan.py </code>
+
+<b> Option 2 Install via (WSL2)<br> 
+<p>Install WSL and install dependencies for linux distro. Guide: https://wiki.ubuntu.com/WSL <br>
 GUI support is comming in a future update (https://devblogs.microsoft.com/commandline/the-windows-subsystem-for-linux-build-2020-summary/#wsl-gui)
-but for now you will need to enable support via X server. (in more detail at https://wiki.ubuntu.com/WSL)</p>
+but for now you will need to enable support via X server. (in more detail at https://wiki.ubuntu.com/WSL)<br>
+Follow linux installation instructions.</p>
+
+
 
 Navigate to Hough-Scan directory in terminal and run
   </p>
