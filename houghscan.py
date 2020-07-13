@@ -7,8 +7,10 @@ import cv2
 from matplotlib import pyplot as plt
 import matplotlib.image as mpimg
 import numpy as np
+#module inside matplotlib that allows us to use in gtk
 from matplotlib.backends.backend_gtk3 import NavigationToolbar2GTK3 as NavigationToolbar
 
+#setup variables for Hough analysis
 class hough_params:
     def __init__(self, blur=5, min_dist=80, canny_detection=80, hough_threshold=50, min_radius=0, max_radius=0):
         self.blur = blur
@@ -18,12 +20,8 @@ class hough_params:
         self.listbox_row = Gtk.ListBoxRow()
         self.min_radius = min_radius
         self.max_radius = max_radius
-        #self.data = None
-        #self.tile_size = 800
-        #self.no_tiles_x = 12
-        #self.no_tiles_y = 10
-        #self.doubles_removal_distance = 100
 
+#Setup lists and tiling parameters
 class universal_params:
         data = np.empty((0,3), int)
         liststore = Gtk.ListStore(int, int, int)
@@ -35,6 +33,7 @@ class universal_params:
 
 
 class Handler:
+    #
     def add_run(run_list):
         run = hough_params()
         run_list.append(run)
@@ -48,22 +47,29 @@ class Handler:
         return True
 
     def updatezoom():
+        #run function in plot_view to redraw the preview with new location using main setup paramters
         main_setup.image_plot.zoom(main_setup.preview_position[0],
                                         main_setup.preview_position[1],
                                         params=main_setup.current_params)
         print(main_setup.current_params)
 
     def updatezoomonclick(event):
+        #reject anytoning other than left click from mous
          if event.button!=1: return
          if (event.xdata is None): return
+         #set main_setups x and y positions
          main_setup.preview_position[0],main_setup.preview_position[1] = event.xdata, event.ydata
+         #update preview using new x and y locations
          Handler.updatezoom()
 
+    #general process when spinbutton updated (takes the value on spinbutton and name of paramter to change)
     def update_spinbuttons(button_value, parameter):
-
             print('button pressed')
+            #checks current parameter value
             before = getattr(main_setup.current_params, parameter)
+            #sets parameter as on spinbutton
             setattr(main_setup.current_params, parameter, button_value)
+            #only if the paramter has changed update the preview
             if getattr(main_setup.current_params, parameter) != before:
                 print('scan updated!')
                 Handler.updatezoom()
@@ -73,26 +79,34 @@ class Handler:
         Handler.update_scanlist(main_setup.scan_listbox, main_setup.run_list)
         Handler.last_updated_scanlist_size += 1
 
+    #blur spinbox activate/button released signal
     def update_blur(self, entry, *args):
+        #takes spinbox's entry object
         button_value = int(entry.get_text())
+        #passes parameter name 'blur' to update_spinbuttons with value on spinbox
         Handler.update_spinbuttons(button_value, 'blur')
 
+    #same process as above
     def update_min_dist(self, entry, *args):
         button_value = int(entry.get_text())
         Handler.update_spinbuttons(button_value, 'min_dist')
 
+    #same process as above
     def update_canny_detection(self, entry, *args):
         button_value = int(entry.get_text())
         Handler.update_spinbuttons(button_value, 'canny_detection')
 
+    #same process as above
     def update_hough_threshold(self, entry, *args):
         button_value = int(entry.get_text())
         Handler.update_spinbuttons(button_value, 'hough_threshold')
 
+    #same process as above
     def update_min_radius(self, entry, *args):
         button_value = int(entry.get_text())
         Handler.update_spinbuttons(button_value, 'min_radius')
 
+    #same process as above
     def update_max_radius(self, entry, *args):
         button_value = int(entry.get_text())
         Handler.update_spinbuttons(button_value, 'max_radius')
@@ -250,28 +264,42 @@ class Handler:
 
 
 class main_setup:
-
-
+    #initial run variables
     run1 = hough_params()
+    #generates list to add multiple runs
     run_list = [run1]
+    #sets initial run to edit
     current_params = run_list[0]
-    builder = Gtk.Builder()
+    #sets initial preview location(before clicking)
     preview_position = [500,500]
-    builder.add_from_file("tool_layout.glade")
-    builder.connect_signals(Handler())
-    window = builder.get_object("main_window")
-    viewpane = builder.get_object("viewpane")
 
+    #builds interface from glade xml file
+    builder = Gtk.Builder()
+    builder.add_from_file("tool_layout.glade")
+    #passes XML's signals to various handlers as described in XML
+    builder.connect_signals(Handler())
+
+    #gets the main window as object
+    window = builder.get_object("main_window")
+    #gets box which the matplotlib viewer will be placed in as object
+    viewpane = builder.get_object("viewpane")
+    #gets the listbox of different 'runs' as an object
     scan_listbox = builder.get_object('scan_listbox')
+    #setup listbox inital contents
     selected_row = None
     listbox_contents = []
 
+    #DrawGraph function from plot_view.py creates an object with setup for main and preview matplotlib diagrams
     image_plot = DrawGraph()
+    #adds the main diagram (canvas generated by the function above) to the box labelled vewpane
     viewpane.pack_start(image_plot.canvas, True, True, 0)
+    #uses matplotlib event handling function to update preview when main diagram is clicked
     image_plot.canvas.mpl_connect('button_press_event', Handler.updatezoomonclick)
+    #gets the preview box as object
     zoom_preview = builder.get_object("zoom_preview")
+    #adds the preview diagram to the box
     zoom_preview.add(image_plot.zoomcanvas)
-
+    
     toolbar = NavigationToolbar(image_plot.canvas, window)
     plotbuttons = builder.get_object('plotbuttons')
     plotbuttons.add(toolbar)
@@ -301,15 +329,6 @@ class histogram_window:
             box = main_setup.builder.get_object('histogram_container')
             hist_plot = DrawHistogram()
             box.pack_start(hist_plot.canvas, True, True, 0)
-
-
-
-
-
-
-
-
-
 
 
 main_setup()
