@@ -27,7 +27,7 @@ Application for detection and data extraction of circular objects, such as emuls
 
 <h3> Windows </h3>
  <p> 
-  Hough Scan is created using GTK3+, the easiest way to run it on windows currrently is by via WSL (below). 
+  Hough Scan is created using GTK3+, the easiest way to run it on windows currrently is via WSL (below). 
 </p>
 
 <ul>
