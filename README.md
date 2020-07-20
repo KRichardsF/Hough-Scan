@@ -18,7 +18,7 @@ Application for detection and data extraction of circular objects, such as emuls
 <h2><a name="Installation"> Installation (Developer Build)</a></h2>
  
 
-<h3> linux </h3>
+<h3> linux (Ubuntu) </h3>
 <ul>
    <li>Install dependencies.<br>
    <li>Navigate to Hough-Scan directory in terminal and run:
@@ -27,20 +27,9 @@ Application for detection and data extraction of circular objects, such as emuls
 
 <h3> Windows </h3>
  <p> 
-  Hough Scan is created using GTK3+ which cannot be installed via pip command used for other packages, as such there are two main options if you wish to access the developer build 
+  Hough Scan is created using GTK3+, the easiest way to run it on windows currrently is by via WSL (below). 
 </p>
 
-
-<b> Option 1 (Install via MYSYS2) </b> 
-<ul>
-  <li>Install Mysys2 and the packages required for GTK3+ by following the instructions here: <br>
-https://www.gtk.org/docs/installations/windows/ <br>
-  <li>Install all other dependencies <br>
-  <li>Run via mysys2 terminal by navigating to Hough-Scan directory and run:
-  <code> Python3 houghscan.py </code> 
-</ul>
-
-<b> Option 2 Install via (WSL2)</b> 
 <ul>
   <li> Install WSL and linux distro of your choice. Guide: https://wiki.ubuntu.com/WSL <br>
   GUI support is comming in a future update (https://devblogs.microsoft.com/commandline/the-windows-subsystem-for-linux-build-2020-summary/#wsl-gui)
