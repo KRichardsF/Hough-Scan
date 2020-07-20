@@ -41,11 +41,13 @@ Application for detection and data extraction of circular objects, such as emuls
 
 <h2><a name="Dependencies"> Dependencies </a></h2>
 <li> Matplotlib 
-  <code> pip3 install matplotlib </code>
+  <code> pip install matplotlib </code>
 <li> Numpy
-  <code> pip3 install numpy </code>
+  <code> pip install numpy </code>
+<li> Scipy
+  <code>pip install scipy </code>
 <li> OpenCV
-  <code>pip3 install opencv-python</code>
+  <code>pip install opencv-python</code>
   
 <h2><a name="User Guide"> User Guide </a></h2>
 <img src="./Readme_Images/Screenshot.png" width="50%" height="50%">
