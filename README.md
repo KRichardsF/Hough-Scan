@@ -4,7 +4,7 @@
 Application for detection and data extraction of circular objects, such as emulsion droplets, from microscopy images
   </p>
   
-<h3> Contenets </h3>
+<h3> Contents </h3>
 <ul> 
   <li><a href="#Installation"> Installation (Developer Build)
   <li><a href="#Dependencies"> Dependencies
@@ -22,7 +22,7 @@ Application for detection and data extraction of circular objects, such as emuls
 <ul>
    <li>Install dependencies.<br>
    <li>Navigate to Hough-Scan directory in terminal and run:
-   <code> Python3 houghscan.py </code>
+   <code> Python houghscan.py </code>
 </ul>
 
 <h3> Windows </h3>
