@@ -121,12 +121,12 @@ class Handler:
     def update_no_tiles_x (self, entry, *args):
         button_value = int(entry.get_text())
         #Handler.update_spinbuttons(button_value, 'no_tiles_x')
-        universal_params.update_no_tiles_x = button_value
+        universal_params.no_tiles_x = button_value
 
     def update_no_tiles_y (self, entry, *args):
         button_value = int(entry.get_text())
         #Handler.update_spinbuttons(button_value, 'no_tiles_y')
-        universal_params.update_no_tiles_y = button_value
+        universal_params.no_tiles_y = button_value
 
     def update_doubles_removal (self, entry, *args):
         button_value = int(entry.get_text())
