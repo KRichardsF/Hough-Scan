@@ -7,6 +7,7 @@ import cv2
 from matplotlib import pyplot as plt
 import matplotlib.image as mpimg
 import numpy as np
+import threading
 #module inside matplotlib that allows us to use in gtk
 from matplotlib.backends.backend_gtk3 import NavigationToolbar2GTK3 as NavigationToolbar
 
@@ -72,7 +73,8 @@ class Handler:
             #only if the paramter has changed update the preview
             if getattr(main_setup.current_params, parameter) != before:
                 print('scan updated!')
-                Handler.updatezoom()
+                t1 = threading.Thread(target=Handler.updatezoom)
+                t1.start()
 
     def add_button_pressed(self, *args):
         Handler.add_run(main_setup.run_list)
@@ -162,8 +164,24 @@ class Handler:
         print(csv_string)
         data_window.clipboard.set_text(csv_string, -1)
 
+    def run_button_pressed(self, *args):
+        print('run button pressed')
+        t1 = threading.Thread(target= Handler.run_analysis)
+        t1.start()
+        Handler.processing_display(True)
 
-    def run_analysis(self, *args):
+    def processing_display(active):
+        processing_spinner = main_setup.builder.get_object("processing_spinner")
+        processing_label = main_setup.builder.get_object("processing_label")
+        if active == True:
+            processing_label.set_text("Processing, Please Wait...")
+            processing_spinner.start()
+            print(processing_label.get_text())
+        else:
+            processing_label.set_text("")
+            processing_spinner.stop()
+
+    def run_analysis():
         input_img = cv2.imread(main_setup.image_plot.image, 1)
         eb_img = cv2.cvtColor(input_img, cv2.COLOR_BGR2GRAY)
         tile_array1 = tiles(eb_img, tile_size=universal_params.tile_size,
@@ -194,6 +212,7 @@ class Handler:
         universal_params.data = data
         #setattr(main_setup.current_params, 'data', data)
         main_setup.image_plot.draw()
+        Handler.processing_display(False)
 
 
     def on_file_clicked(self, widget, *args):
@@ -299,7 +318,7 @@ class main_setup:
     zoom_preview = builder.get_object("zoom_preview")
     #adds the preview diagram to the box
     zoom_preview.add(image_plot.zoomcanvas)
-    
+
     toolbar = NavigationToolbar(image_plot.canvas, window)
     plotbuttons = builder.get_object('plotbuttons')
     plotbuttons.add(toolbar)

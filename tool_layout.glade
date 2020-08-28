@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.22.1 -->
+<!-- Generated with glade 3.22.2 -->
 <interface>
   <requires lib="gtk+" version="3.20"/>
   <object class="GtkAdjustment" id="adjustment1">
@@ -41,7 +41,7 @@
     <property name="can_focus">False</property>
     <property name="icon">Houghscan Icon.svg</property>
     <signal name="destroy" handler="onDestroy" swapped="no"/>
-    <child>
+    <child type="titlebar">
       <placeholder/>
     </child>
     <child>
@@ -546,7 +546,7 @@
                               <object class="GtkLabel" id="parameter_label_3">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="label" translatable="yes">Canny 
+                                <property name="label" translatable="yes">Canny
 Upper Limit</property>
                                 <property name="justify">center</property>
                               </object>
@@ -590,7 +590,7 @@ Upper Limit</property>
                               <object class="GtkLabel" id="parameter_label_4">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="label" translatable="yes">Hough 
+                                <property name="label" translatable="yes">Hough
 Threshold</property>
                                 <property name="justify">center</property>
                               </object>
@@ -763,9 +763,6 @@ Threshold</property>
                 <property name="can_focus">False</property>
                 <property name="orientation">vertical</property>
                 <child>
-                  <placeholder/>
-                </child>
-                <child>
                   <object class="GtkListBox" id="scan_listbox">
                     <property name="height_request">106</property>
                     <property name="visible">True</property>
@@ -778,7 +775,7 @@ Threshold</property>
                     <property name="expand">False</property>
                     <property name="fill">True</property>
                     <property name="padding">4</property>
-                    <property name="position">1</property>
+                    <property name="position">0</property>
                   </packing>
                 </child>
                 <child>
@@ -839,6 +836,64 @@ Threshold</property>
                   <packing>
                     <property name="expand">False</property>
                     <property name="fill">True</property>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkBox">
+                    <property name="name">processing_box</property>
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="margin_bottom">10</property>
+                    <property name="orientation">vertical</property>
+                    <child>
+                      <object class="GtkSpinner" id="processing_spinner">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="margin_top">10</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="processing_label">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">1</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="run_button">
+                        <property name="label" translatable="yes">Run</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="receives_default">True</property>
+                        <property name="margin_left">20</property>
+                        <property name="margin_right">20</property>
+                        <property name="margin_bottom">5</property>
+                        <signal name="clicked" handler="run_button_pressed" swapped="no"/>
+                        <style>
+                          <class name="suggested-action"/>
+                        </style>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="padding">5</property>
+                        <property name="position">2</property>
+                      </packing>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
                     <property name="position">2</property>
                   </packing>
                 </child>
@@ -850,24 +905,7 @@ Threshold</property>
               </packing>
             </child>
             <child>
-              <object class="GtkButton" id="run_button">
-                <property name="label" translatable="yes">Run</property>
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">True</property>
-                <property name="margin_left">20</property>
-                <property name="margin_right">20</property>
-                <signal name="clicked" handler="run_analysis" swapped="no"/>
-                <style>
-                  <class name="suggested-action"/>
-                </style>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="padding">20</property>
-                <property name="position">4</property>
-              </packing>
+              <placeholder/>
             </child>
           </object>
           <packing>
@@ -943,7 +981,7 @@ Threshold</property>
     <property name="gravity">north-east</property>
     <signal name="delete-event" handler="closeWindow" swapped="no"/>
     <signal name="destroy" handler="closeWindow" swapped="no"/>
-    <child>
+    <child type="titlebar">
       <placeholder/>
     </child>
     <child>
@@ -1001,7 +1039,7 @@ Threshold</property>
     <property name="show_menubar">False</property>
     <signal name="delete-event" handler="closeWindow" swapped="no"/>
     <signal name="destroy" handler="closeWindow" swapped="no"/>
-    <child>
+    <child type="titlebar">
       <placeholder/>
     </child>
     <child>
@@ -1047,7 +1085,7 @@ Threshold</property>
                 <property name="margin_top">5</property>
                 <property name="margin_bottom">5</property>
                 <signal name="activate" handler="change_bins" swapped="no"/>
-                <signal name="editing-done" handler="chnage_bins" swapped="no"/>
+                <signal name="editing-done" handler="change_bins" swapped="no"/>
               </object>
               <packing>
                 <property name="expand">False</property>
