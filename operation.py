@@ -1,5 +1,6 @@
 import concurrent.futures
 from functools import partial
+import math
 import time
 import numpy as np
 import matplotlib.mlab as mlab
@@ -26,22 +27,21 @@ class hough_process():
         return circles[0]
 
 class tiles():
-    def __init__(self, image, tile_size=800, no_tiles_x=12, no_tiles_y=10):
+    def __init__(self, image, tile_size=800, overlap=0):
         self.image = image
         self.height, self.width = self.image.shape[:2]
         self.tile_size = tile_size
-        self.no_tiles_x = no_tiles_x
-        self.scale_x = (self.width/(self.no_tiles_x*self.tile_size))
-        self.no_tiles_y = no_tiles_y
-        self.scale_y = (self.height/(self.no_tiles_y*self.tile_size))
+        self.overlap = overlap
+        self.no_tiles_x = math.floor(self.width/(self.tile_size-self.overlap))
+        self.no_tiles_y = math.floor(self.height/(self.tile_size-self.overlap))
         self.current_image = None
 
     def iotile(self, function, args, kwargs, location):
         #generates offsets
-        x_offset = (self.tile_size*self.scale_x*location[0])
-        y_offset = (self.tile_size*self.scale_y*location[1])
-        img = self.image[int((self.tile_size*self.scale_y*location[1])):int(((self.tile_size*self.scale_y*location[1])+self.tile_size)),
-                                            int((self.tile_size*self.scale_x*location[0])):int(((self.tile_size*self.scale_x*location[0])+self.tile_size))]
+        x_offset = (self.tile_size*location[0])
+        y_offset = (self.tile_size*location[1])
+        img = self.image[int(y_offset):(int(y_offset)+self.tile_size%self.height),
+                                            int(x_offset):(int(x_offset)+self.tile_size%self.width)]
         try:
             small_array = (function(img, *args, **kwargs))
             #print(small_array)
@@ -61,6 +61,7 @@ class tiles():
         for i in range(0, self.no_tiles_x):
             for j in range(0, self.no_tiles_y):
                     locations.append((i,j))
+        print(locations)
         print('Please Wait, Calclulating...')
         with concurrent.futures.ProcessPoolExecutor() as executor:
             results = executor.map(partial_iotile, locations)

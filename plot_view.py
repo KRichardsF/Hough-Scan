@@ -1,6 +1,5 @@
 #!/usr/bin/python3
 from operation import hough_process
-from gi.repository import Gtk
 from matplotlib.figure import Figure
 import matplotlib.image as mpimg
 import numpy as np
@@ -12,8 +11,9 @@ from matplotlib.backends.backend_gtk3cairo import FigureCanvasGTK3Cairo as Figur
 from matplotlib.backends.backend_gtk3 import NavigationToolbar2GTK3 as NavigationToolbar
 #sets ups graphs/diagrams of image to be analysed/it's preview
 class DrawGraph:
-    def __init__(self, image='Houghscan Background.png', tile_size= 800):
+    def __init__(self, image='Houghscan Background.png', tile_size= 800, background_color='white'):
         #image is a pointer to the location of current background image
+        self.background_color = background_color
         self.image = image
         #imports the image using location 'self.image'
         #Note! this is changed by a setter in houghscan.py to an annotated version after processing
@@ -27,9 +27,10 @@ class DrawGraph:
         self.ax = self.fig.add_subplot(111)
         #creates axis for preview - fig 1
         self.axzoom = self.fig2.add_subplot(111)
-        #matplotlib setting for smaller borders
-        self.fig2.tight_layout()
-        self.fig.tight_layout()
+
+        #sets background color
+        self.fig2.set_facecolor(self.background_color)
+
         #improved dpi setting for saving image (via matplotlib save button)
         self.fig.savefig('edit.jpg', quality=100)
 
@@ -41,11 +42,17 @@ class DrawGraph:
         self.drawzoom()
         self.draw()
 
+        #matplotlib setting for smaller borders
+        self.fig.tight_layout()
+        self.fig2.tight_layout()
+
         #sets up a canvas from figure to use in GTK (function from matplotlib.backends.backend_gtk3)
         self.canvas = FigureCanvas(self.fig)
         self.zoomcanvas = FigureCanvas(self.fig2)
         #scales tile size for preview
         self.zoomcanvas.set_size_request(self.tile_size/4, self.tile_size/4)
+
+
 
     def draw(self):
         #clears axis
@@ -54,6 +61,8 @@ class DrawGraph:
         self.ax.grid(False)
         #matplotlib function to remove axis
         self.ax.axis('off')
+        #sets background color
+        self.fig.set_facecolor(self.background_color)
         #sets axis to current annotated/unannotated import image
         self.ax.imshow(self.img)
         #matplotlib function to redraw canvas
@@ -105,6 +114,7 @@ class DrawGraph:
         self.drawzoom(**kwargs)
         #redraws canvas
         self.fig2.canvas.draw()
+
 
 class DrawHistogram:
     def __init__(self):

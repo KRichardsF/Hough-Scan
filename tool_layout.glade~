@@ -1257,7 +1257,7 @@ Threshold</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="hexpand">True</property>
-                <signal name="activate" handler="submit_response" swapped="no"/>
+                <signal name="activate" handler="Gtk.ResponseType.OK" swapped="no"/>
               </object>
               <packing>
                 <property name="expand">False</property>
