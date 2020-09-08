@@ -302,6 +302,7 @@ class Handler:
         for i, j in enumerate(main_setup.run_list):
             print(i,j)
             data[f'run_{str(i)}'] = json.dumps(j.__dict__)
+            data['output_data'] = json.dumps(universal_params.data.tolist())
         print(data)
         dialog = main_setup.builder.get_object('save_chooser')
 
