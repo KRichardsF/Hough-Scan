@@ -1,1 +1,0 @@
-{"run_0": "{\n    \"blur\": 5,\n    \"canny_detection\": 80,\n    \"doubles_removal_distance\": 100,\n    \"hough_threshold\": 50,\n    \"max_radius\": 0,\n    \"min_dist\": 80,\n    \"min_radius\": 0,\n    \"overlap\": 50,\n    \"tile_size\": 800\n}", "output_data": "[]"}
