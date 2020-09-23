@@ -118,7 +118,7 @@ class DrawGraph:
 
 class DrawHistogram:
     def __init__(self):
-        self.f = Figure(figsize=(5, 4), dpi=100)
+        self.f = Figure(figsize=(19.20,10.80))
         self.a = self.f.add_subplot(111)
         #self.t = np.arange(0.0, 3.0, 0.01)
         #self.s = np.sin(2*3.14*self.t)
