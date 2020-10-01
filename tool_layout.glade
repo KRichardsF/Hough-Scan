@@ -179,6 +179,8 @@
   </object>
   <object class="GtkWindow" id="main_window">
     <property name="can_focus">False</property>
+    <property name="default_width">1000</property>
+    <property name="default_height">850</property>
     <property name="icon">Houghscan Icon.svg</property>
     <signal name="destroy" handler="onDestroy" swapped="no"/>
     <child type="titlebar">
@@ -541,7 +543,6 @@
             <child>
               <object class="GtkScrolledWindow">
                 <property name="width_request">250</property>
-                <property name="height_request">400</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="vexpand">True</property>
@@ -556,7 +557,9 @@
                     <child>
                       <object class="GtkFrame" id="param_bar">
                         <property name="visible">True</property>
-                        <property name="can_focus">False</property>
+                        <property name="can_focus">True</property>
+                        <property name="has_focus">True</property>
+                        <property name="is_focus">True</property>
                         <property name="margin_right">10</property>
                         <property name="label_xalign">0</property>
                         <property name="shadow_type">etched-out</property>
@@ -961,30 +964,6 @@ Threshold</property>
                     <property name="can_focus">False</property>
                     <property name="margin_right">10</property>
                     <child>
-                      <object class="GtkButton" id="add_button_icon">
-                        <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="receives_default">True</property>
-                        <property name="tooltip_text" translatable="yes">Add a new run</property>
-                        <property name="always_show_image">True</property>
-                        <signal name="clicked" handler="on_add" swapped="no"/>
-                        <child>
-                          <object class="GtkImage" id="add_button_ico">
-                            <property name="visible">True</property>
-                            <property name="can_focus">False</property>
-                            <property name="stock">gtk-add</property>
-                            <property name="icon_size">2</property>
-                          </object>
-                        </child>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">True</property>
-                        <property name="pack_type">end</property>
-                        <property name="position">0</property>
-                      </packing>
-                    </child>
-                    <child>
                       <object class="GtkButton" id="remove_button">
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
@@ -1004,6 +983,30 @@ Threshold</property>
                         <property name="expand">False</property>
                         <property name="fill">True</property>
                         <property name="padding">3</property>
+                        <property name="pack_type">end</property>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="add_button_icon">
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="receives_default">True</property>
+                        <property name="tooltip_text" translatable="yes">Add a new run</property>
+                        <property name="always_show_image">True</property>
+                        <signal name="clicked" handler="on_add" swapped="no"/>
+                        <child>
+                          <object class="GtkImage" id="add_button_ico">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="stock">gtk-add</property>
+                            <property name="icon_size">2</property>
+                          </object>
+                        </child>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
                         <property name="pack_type">end</property>
                         <property name="position">0</property>
                       </packing>
@@ -1221,6 +1224,8 @@ Threshold</property>
   <object class="GtkFileChooserDialog" id="save_chooser">
     <property name="can_focus">False</property>
     <property name="type_hint">dialog</property>
+    <property name="action">save</property>
+    <property name="do_overwrite_confirmation">True</property>
     <child internal-child="vbox">
       <object class="GtkBox">
         <property name="can_focus">False</property>
@@ -1271,32 +1276,10 @@ Threshold</property>
             <property name="can_focus">False</property>
             <property name="margin_top">3</property>
             <child>
-              <object class="GtkLabel" id="filename_label">
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="label" translatable="yes">File Name:</property>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="padding">6</property>
-                <property name="position">0</property>
-              </packing>
+              <placeholder/>
             </child>
             <child>
-              <object class="GtkEntry" id="filename_entry">
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="hexpand">True</property>
-                <signal name="activate" handler="submit_response" swapped="no"/>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="padding">6</property>
-                <property name="pack_type">end</property>
-                <property name="position">2</property>
-              </packing>
+              <placeholder/>
             </child>
           </object>
           <packing>

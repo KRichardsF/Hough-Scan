@@ -297,22 +297,20 @@ class Handler:
             main_setup.current_params = main_setup.run_list[0]
 
     def on_exportjson_pressed(self, *args):
-        filename = 'untitledjson'
         data = {}
         for i, j in enumerate(main_setup.run_list):
             print(i,j)
             data[f'run_{str(i)}'] = (j.__dict__)
         data['output_data'] = universal_params.data.tolist()
         print(data)
-        
+
         dialog = main_setup.builder.get_object('save_chooser')
-
         response = dialog.run()
-        if response == Gtk.ResponseType.NONE:
+        if response == Gtk.ResponseType.ACCEPT:
             name_entered = main_setup.builder.get_object('filename_entry')
-            filename = name_entered.get_text()
-
-            with open(f'{filename}.json','w') as outfile:
+            file_name = dialog.get_filename()
+            print(dialog.get_filename())
+            with open(file_name,'w') as outfile:
                 json.dump(data, outfile)
 
         elif response == Gtk.ResponseType.CANCEL:
@@ -325,6 +323,10 @@ class Handler:
     def on_importjson_pressed(self, *args):
         print('button working')
         dialog = main_setup.builder.get_object('load_chooser')
+        filter_json = Gtk.FileFilter()
+        filter_json.set_name("json")
+        filter_json.add_mime_type("application/json")
+        dialog.add_filter(filter_json)
         response = dialog.run()
 
         if response == Gtk.ResponseType.OK:
