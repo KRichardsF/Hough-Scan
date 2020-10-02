@@ -14,7 +14,7 @@ from collections import namedtuple
 #module inside matplotlib that allows us to use in gtk
 from matplotlib.backends.backend_gtk3 import NavigationToolbar2GTK3 as NavigationToolbar
 multiprocessing.freeze_support()
-if __main__ == '__main__':
+if __name__ == '__main__':
     #setup variables for Hough analysis
     class hough_params:
         def __init__(self, blur=5, min_dist=80, canny_detection=80, hough_threshold=50, min_radius=0, max_radius=0, tile_size=800, overlap=50, doubles_removal_distance=100):
