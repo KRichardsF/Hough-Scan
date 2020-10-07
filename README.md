@@ -18,7 +18,7 @@ Application for detection and data extraction of circular objects, such as emuls
  <h2><a name="Installation"> Installation (.exe file)</a></h2>
  <h3> Windows </h3>
  <ul>
-    <li> Download the zip file found <a href="https://github.com/KRichardsF/Hough-Scan/releases/download/0.1/Hough-Scan.zip">here</a> 
+    <li> Download the zip file found <a href="https://github.com/KRichardsF/Hough-Scan/releases">here</a> 
     <li> Extract the file to an appropriate folder (i.e c:program files/hough-scan)
     <li> (optional) copy and paste a shortcut to "houghscan.exe your desktop/start menu
     <li> Double click "houghscan.exe" to run the program
