@@ -7,23 +7,26 @@ import cv2
 from matplotlib import pyplot as plt
 import matplotlib.image as mpimg
 import numpy as np
+import threading
+import json
+from collections import namedtuple
+#module inside matplotlib that allows us to use in gtk
 from matplotlib.backends.backend_gtk3 import NavigationToolbar2GTK3 as NavigationToolbar
 
+#setup variables for Hough analysis
 class hough_params:
-    def __init__(self, blur=5, min_dist=80, canny_detection=80, hough_threshold=50, min_radius=0, max_radius=0):
+    def __init__(self, blur=5, min_dist=80, canny_detection=80, hough_threshold=50, min_radius=0, max_radius=0, tile_size=800, overlap=50, doubles_removal_distance=100):
         self.blur = blur
         self.min_dist = min_dist
         self.canny_detection = canny_detection
         self.hough_threshold = hough_threshold
-        self.listbox_row = Gtk.ListBoxRow()
         self.min_radius = min_radius
         self.max_radius = max_radius
-        #self.data = None
-        #self.tile_size = 800
-        #self.no_tiles_x = 12
-        #self.no_tiles_y = 10
-        #self.doubles_removal_distance = 100
+        self.tile_size = tile_size
+        self.overlap = overlap
+        self.doubles_removal_distance = doubles_removal_distance
 
+#Setup lists and tiling parameters
 class universal_params:
         data = np.empty((0,3), int)
         liststore = Gtk.ListStore(int, int, int)
@@ -31,10 +34,12 @@ class universal_params:
         no_tiles_x = 12
         no_tiles_y = 10
         doubles_removal_distance = 100
+        startup = True
 
 
 
 class Handler:
+    #
     def add_run(run_list):
         run = hough_params()
         run_list.append(run)
@@ -48,51 +53,67 @@ class Handler:
         return True
 
     def updatezoom():
+        #run function in plot_view to redraw the preview with new location using main setup paramters
         main_setup.image_plot.zoom(main_setup.preview_position[0],
                                         main_setup.preview_position[1],
                                         params=main_setup.current_params)
         print(main_setup.current_params)
 
     def updatezoomonclick(event):
+        #reject anytoning other than left click from mous
          if event.button!=1: return
          if (event.xdata is None): return
+         #set main_setups x and y positions
          main_setup.preview_position[0],main_setup.preview_position[1] = event.xdata, event.ydata
-         Handler.updatezoom()
+         #update preview using new x and y locations
+         t1 = threading.Thread(target=Handler.updatezoom)
+         t1.start()
 
+    #general process when spinbutton updated (takes the value on spinbutton and name of paramter to change)
     def update_spinbuttons(button_value, parameter):
-
             print('button pressed')
+            #checks current parameter value
             before = getattr(main_setup.current_params, parameter)
+            #sets parameter as on spinbutton
             setattr(main_setup.current_params, parameter, button_value)
+            #only if the paramter has changed update the preview
             if getattr(main_setup.current_params, parameter) != before:
                 print('scan updated!')
-                Handler.updatezoom()
+                t1 = threading.Thread(target=Handler.updatezoom)
+                t1.start()
 
     def add_button_pressed(self, *args):
         Handler.add_run(main_setup.run_list)
         Handler.update_scanlist(main_setup.scan_listbox, main_setup.run_list)
-        Handler.last_updated_scanlist_size += 1
 
+    #blur spinbox activate/button released signal
     def update_blur(self, entry, *args):
+        #takes spinbox's entry object
         button_value = int(entry.get_text())
+        #passes parameter name 'blur' to update_spinbuttons with value on spinbox
         Handler.update_spinbuttons(button_value, 'blur')
 
+    #same process as above
     def update_min_dist(self, entry, *args):
         button_value = int(entry.get_text())
         Handler.update_spinbuttons(button_value, 'min_dist')
 
+    #same process as above
     def update_canny_detection(self, entry, *args):
         button_value = int(entry.get_text())
         Handler.update_spinbuttons(button_value, 'canny_detection')
 
+    #same process as above
     def update_hough_threshold(self, entry, *args):
         button_value = int(entry.get_text())
         Handler.update_spinbuttons(button_value, 'hough_threshold')
 
+    #same process as above
     def update_min_radius(self, entry, *args):
         button_value = int(entry.get_text())
         Handler.update_spinbuttons(button_value, 'min_radius')
 
+    #same process as above
     def update_max_radius(self, entry, *args):
         button_value = int(entry.get_text())
         Handler.update_spinbuttons(button_value, 'max_radius')
@@ -102,22 +123,19 @@ class Handler:
         print('tile_size', button_value)
         setattr(main_setup.image_plot, 'tile_size', button_value)
         #Handler.update_spinbuttons(button_value, 'tile_size')
-        universal_params.tile_size = button_value
+        setattr(main_setup.current_params, 'tile_size', button_value)
 
-    def update_no_tiles_x (self, entry, *args):
+    def update_overlap (self, entry, *args):
         button_value = int(entry.get_text())
+        print('overlap', button_value)
         #Handler.update_spinbuttons(button_value, 'no_tiles_x')
-        universal_params.update_no_tiles_x = button_value
-
-    def update_no_tiles_y (self, entry, *args):
-        button_value = int(entry.get_text())
-        #Handler.update_spinbuttons(button_value, 'no_tiles_y')
-        universal_params.update_no_tiles_y = button_value
+        setattr(main_setup.current_params, 'overlap', button_value)
 
     def update_doubles_removal (self, entry, *args):
         button_value = int(entry.get_text())
+        print('doubles removal distance', button_value)
         #Handler.update_spinbuttons(button_value, 'doubles_removal_distance')
-        universal_params.doubles_removal_distance = button_value
+        setattr(main_setup.current_params, 'doubles_removal_distance', button_value)
 
     def display_histogram (self, *args):
         histogram_window.hist_plot.draw(universal_params.data)
@@ -148,18 +166,36 @@ class Handler:
         print(csv_string)
         data_window.clipboard.set_text(csv_string, -1)
 
+    def run_button_pressed(self, *args):
+        print('run button pressed')
+        Handler.processing_display(True)
+        t1 = threading.Thread(target= Handler.run_analysis)
+        t1.start()
 
-    def run_analysis(self, *args):
+
+    def processing_display(active):
+        processing_spinner = main_setup.builder.get_object("processing_spinner")
+        run_button = main_setup.builder.get_object("run_button")
+        #context = run_button.get_style_context()
+        if active == True:
+            #context.remove_class("suggested-action")
+            run_button.set_label("Processing, Please Wait...")
+            processing_spinner.start()
+
+        else:
+            #context.add_class("suggested-action")
+            run_button.set_label("Run")
+            processing_spinner.stop()
+
+    def run_analysis():
         input_img = cv2.imread(main_setup.image_plot.image, 1)
         eb_img = cv2.cvtColor(input_img, cv2.COLOR_BGR2GRAY)
-        tile_array1 = tiles(eb_img, tile_size=universal_params.tile_size,
-                                    no_tiles_x=universal_params.no_tiles_x,
-                                    no_tiles_y=universal_params.no_tiles_y)
-
 
         data = np.empty((0,3), int)
         for i in main_setup.run_list:
-            circles = tile_array1.tile(hough_process.hough, blur= i.blur,
+            tile_array = tiles(eb_img, tile_size=i.tile_size,
+                                        overlap=i.overlap)
+            circles = tile_array.tile(hough_process.hough, blur= i.blur,
                                                             dp= 1,
                                                             min_dist= i.min_dist,
                                                             canny_upper= i.canny_detection,
@@ -168,7 +204,7 @@ class Handler:
                                                             max_radius= i.max_radius)
 
             data = np.append(data, circles, axis=0)
-            data = tile_array1.remove_doubles(data, separation= universal_params.doubles_removal_distance)
+            data = tile_array.remove_doubles(data, separation= i.doubles_removal_distance)
 
             #np.append(data1, circles, axis=0)
         for i in data:
@@ -180,6 +216,7 @@ class Handler:
         universal_params.data = data
         #setattr(main_setup.current_params, 'data', data)
         main_setup.image_plot.draw()
+        Handler.processing_display(False)
 
 
     def on_file_clicked(self, widget, *args):
@@ -206,13 +243,21 @@ class Handler:
                 main_setup.scan_listbox.add(label)
                 main_setup.listbox_contents.append(i)
                 main_setup.scan_listbox.show_all()
+                print(main_setup.run_list)
 
+
+    def on_clear_listbox(*args):
+        main_setup.listbox_contents = []
+        main_setup.run_list = []
+        active_row_objects = main_setup.scan_listbox.get_children()
+        for i in active_row_objects:
+            main_setup.scan_listbox.remove(i)
 
     def on_remove(self, *args):
         index = main_setup.selected_row
         print(index)
-        del main_setup.listbox_contents[index]
-        del main_setup.run_list[index]
+        del main_setup.listbox_contents[index-1]
+        del main_setup.run_list[index-1]
         active_row_object = main_setup.scan_listbox.get_selected_row()
         main_setup.scan_listbox.remove(active_row_object)
 
@@ -240,42 +285,127 @@ class Handler:
             adjustment5.set_value(main_setup.run_list[index].min_radius)
             adjustment6 = main_setup.builder.get_object('adjustment6')
             adjustment6.set_value(main_setup.run_list[index].max_radius)
+            tile_size_entry = main_setup.builder.get_object('tile_size_entry')
+            tile_size_entry.set_text(str(main_setup.run_list[index].tile_size))
+            tile_overlap_entry = main_setup.builder.get_object('tile_overlap_entry')
+            tile_overlap_entry.set_text(str(main_setup.run_list[index].overlap))
+            doubles_removal_entry = main_setup.builder.get_object('doubles_removal_entry')
+            doubles_removal_entry.set_text(str(main_setup.run_list[index].doubles_removal_distance))
             Handler.updatezoom()
 
         except:
             main_setup.current_params = main_setup.run_list[0]
 
+    def on_exportjson_pressed(self, *args):
+        data = {}
+        for i, j in enumerate(main_setup.run_list):
+            print(i,j)
+            data[f'run_{str(i)}'] = (j.__dict__)
+        data['output_data'] = universal_params.data.tolist()
+        print(data)
 
+        dialog = main_setup.builder.get_object('save_chooser')
+        response = dialog.run()
+        if response == Gtk.ResponseType.ACCEPT:
+            name_entered = main_setup.builder.get_object('filename_entry')
+            file_name = dialog.get_filename()
+            print(dialog.get_filename())
+            with open(file_name,'w') as outfile:
+                json.dump(data, outfile)
 
+        elif response == Gtk.ResponseType.CANCEL:
+            print("Cancel clicked")
+        dialog.hide()
+
+    def jsondecoder(jsondict):
+        return namedtuple('X', jsondict.keys())(*jsondict.values())
+
+    def on_importjson_pressed(self, *args):
+        print('button working')
+        dialog = main_setup.builder.get_object('load_chooser')
+        filter_json = Gtk.FileFilter()
+        filter_json.set_name("json")
+        filter_json.add_mime_type("application/json")
+        dialog.add_filter(filter_json)
+        response = dialog.run()
+
+        if response == Gtk.ResponseType.OK:
+
+            print("File selected: " + dialog.get_filename())
+            file_selected = dialog.get_filename()
+            print(file_selected)
+            with open(file_selected, mode='r', encoding='utf-8') as json_data:
+                data = json.load(json_data)
+                print (type(data))
+                print(data.values())
+                new_array = []
+                for i in data:
+                    j = (json.loads(data[i]))
+                    obj = hough_params(blur=j['blur'],
+                                        min_dist=j['min_dist'],
+                                        canny_detection=j['canny_detection'],
+                                        hough_threshold=j['hough_threshold'],
+                                        min_radius=j['min_radius'],
+                                        max_radius=j['max_radius'],
+                                        tile_size=j['tile_size'],
+                                        overlap=j['overlap'],
+                                        doubles_removal_distance=j['doubles_removal_distance'])
+                    new_array.append(obj)
+            Handler.on_clear_listbox()
+            main_setup.run_list = new_array
+            Handler.update_listbox()
+
+        elif response == Gtk.ResponseType.APPLY:
+            print("Cancel clicked")
+        dialog.hide()
 
 
 class main_setup:
-
-
-    run1 = hough_params()
-    run_list = [run1]
+    #initial run variables
+    run0 = hough_params()
+    #generates list to add multiple runs
+    run_list = [run0]
+    #sets initial run to edit
     current_params = run_list[0]
-    builder = Gtk.Builder()
+    #sets initial preview location(before clicking)
     preview_position = [500,500]
-    builder.add_from_file("tool_layout.glade")
-    builder.connect_signals(Handler())
-    window = builder.get_object("main_window")
-    viewpane = builder.get_object("viewpane")
 
+    #builds interface from glade xml file
+    builder = Gtk.Builder()
+    builder.add_from_file("tool_layout.glade")
+    #passes XML's signals to various handlers as described in XML
+    builder.connect_signals(Handler())
+
+    #gets the main window as object
+    window = builder.get_object("main_window")
+    #gets box which the matplotlib viewer will be placed in as object
+    viewpane = builder.get_object("viewpane")
+    #gets the listbox of different 'runs' as an object
+    listbox_scroller = builder.get_object('listbox_scroller')
     scan_listbox = builder.get_object('scan_listbox')
+    #setup listbox inital contents
+    #setup listbox inital contents
     selected_row = None
     listbox_contents = []
 
-    image_plot = DrawGraph()
-    viewpane.pack_start(image_plot.canvas, True, True, 0)
+    context = window.get_style_context()
+    color1 = context.get_background_color(Gtk.StateFlags.NORMAL)
+    color1 = (color1.red,color1.blue,color1.green)
+    print(type(color1))
+    #DrawGraph function from plot_view.py creates an object with setup for main and preview matplotlib diagrams
+    image_plot = DrawGraph(background_color=(color1))
+    #adds the main diagram (canvas generated by the function above) to the box labelled vewpane
+    viewpane.add(image_plot.canvas)
+    #uses matplotlib event handling function to update preview when main diagram is clicked
     image_plot.canvas.mpl_connect('button_press_event', Handler.updatezoomonclick)
+    #gets the preview box as object
     zoom_preview = builder.get_object("zoom_preview")
+    #adds the preview diagram to the box
     zoom_preview.add(image_plot.zoomcanvas)
 
     toolbar = NavigationToolbar(image_plot.canvas, window)
     plotbuttons = builder.get_object('plotbuttons')
     plotbuttons.add(toolbar)
-
     window.show_all()
 
 
@@ -301,15 +431,6 @@ class histogram_window:
             box = main_setup.builder.get_object('histogram_container')
             hist_plot = DrawHistogram()
             box.pack_start(hist_plot.canvas, True, True, 0)
-
-
-
-
-
-
-
-
-
 
 
 main_setup()
