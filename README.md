@@ -61,8 +61,9 @@ Application for detection and data extraction of circular objects, such as emuls
   <li> Step 7 (optional): Add additional runs by pressing the + or - button
 </ul>
 
-
 <h2><a name="Planned Updates"> Planned Updates </a></h2>
+
+<h2><a name="Recent Changes"> Recent Changes </a></h2>
 <ul>
   <li> Executable version
   <li> Export as JSON file 
@@ -72,14 +73,36 @@ Application for detection and data extraction of circular objects, such as emuls
 
 
 <h2><a name="Theory"> Theory </a></h2>
+<p> For more information on the image manipulation processes, please visit https://opencv.org/ . Below we have summarised the some of the processes performed by the OpenCV library in order to give the user a better idea what each of the paramters used in this software do. </p>
+  
+  
   <p align="left">
   Hough Scan uses the following techniques to process an image: greyscale conversion, blur, sobel operation and canny edge detection followed by the circle hough transform.
   </p>
 <h3> Kernel Convolution </h3>
-<p> Blur and Sobel are both kernel convolition processes. For each pixel in the image (red square) the neighbouring pixels (green square) are added using a weighting which is determined by the kernel (3x3 matrix - greek letters in this case). The output is then often normalised. </p>
+<p> Blur and Sobel are both kernel convolition processes. For each pixel in the image (red square) the neighbouring pixels (green square) are added using a weighting which is determined by the kernel (3x3 matrix - greek letters in this case). The output is then often normalised. The "Blur" parameter adjusts the number of pixels used in blurring </p>
 <img src="./Readme_Images/Kernel_Convolution.png" width="50%" height="50%">
+<img src="./Readme_Images/Kernel_Equation.png" width="50%" height="50%">
 
-<p> ### UNDER CONSTRUCTION ### </p>
+
+<h3> Sobel Operation </h3>
+<p> The Sobel operation is an example of a kernel convolution process used for edge detection. It is applied in both the x and y direction independently and allows the calculation of angular informatio as shown by the below figure. This information is then used in the next process - canny edge detection. </p>
+<img src="./Readme_Images/Sobel_Operation.png" width="50%" height="50%">
+<img src="./Readme_Images/Sobel_Equation.png" width="50%" height="50%">
+
+<h3> Canny Edge Detection </h3>
+<p> Canny edge detection uses two thresholds (primary and secondary). A line is drawn in the direction of the 'edge' values above the primary threshold are retained and values below are removed. If however, a value is below the primary theshold but above the secondary threshold <b> and </b> is also connected to a point above the primary threshold by pixel tracing (i.e. without dipping below the secondary threshold) the value is retained. The "Canny Upper" parameter sets the primary threshold and the secondary threshold is automatically set.</p> 
+<img src="./Readme_Images/Canny_Edge.png" width="50%" height="50%">
+
+<h3> Circle Hough Transform </h3> 
+<p> At this stage the image has been refined to a set of thin white lines/circles on a black background. The circle Hough-tansform will scan across the image until it finds a white pixel. For each pixel it will draw a circle of radius r (where r is an ever-increasing value upon each pass of the image and is set between two limits) is drawn using the equation for a circle.</p>
+<img src="./Readme_Images/Circle_Equation.png" width="50%" height="50%">
+<p> the circles are added to an 'accumulator image'. If the radii of the drawn circles match the radii of circles in the image, a bright spot will be seen indicating the center of the circle. The "Hough Threshold" parameter is used to determine at which value a bright spot is conscidered a true center of a circle. The "Min distance" parameter will set a minimum distance between circle centers, the "Min and Max Radius" will determine the valuse of r that are conscidered.
+<img src="./Readme_Images/Circle_Hough.png" width="50%" height="50%">
+  
+ <h3> Tiling </h3> 
+ <p> due to the complexity of many microscopy images (with i.e. more than 100 circular objects) it is convinient to tile the images, allowing for rendundacy at the boundary by removing dupicate coordinates. The size of tiles used, the overlap and the distance to remove duplicates may be altered using the "Tile Size, Overlap and Doubles Removal Dist." parameters. 
+
 
 <h2><a name="Changelog"> Changelog </a></h2>
 <ul>
