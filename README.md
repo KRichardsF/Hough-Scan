@@ -73,7 +73,7 @@ Application for detection and data extraction of circular objects, such as emuls
 
 
 <h2><a name="Theory"> Theory </a></h2>
-<p> For more information on the image manipulation processes, please visit https://opencv.org/ . Below we have summarised the some of the processes performed by the OpenCV library in order to give the user a better idea what each of the paramters used in this software do. </p>
+<p> For more information on the image manipulation processes, please visit https://opencv.org/ . Below we have summarised some of the processes performed by the OpenCV library in order to give the user a better idea what each of the paramters used in this software do. </p>
   
   
   <p align="left">
