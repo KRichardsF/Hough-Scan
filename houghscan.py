@@ -310,7 +310,7 @@ class Handler:
             name_entered = main_setup.builder.get_object('filename_entry')
             file_name = dialog.get_filename()
             print(dialog.get_filename())
-            with open(file_name,'w') as outfile:
+            with open(f'{file_name}.json','w') as outfile:
                 json.dump(data, outfile)
 
         elif response == Gtk.ResponseType.CANCEL:
