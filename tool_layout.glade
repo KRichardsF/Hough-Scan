@@ -81,6 +81,7 @@
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="receives_default">True</property>
+            <property name="tooltip_text" translatable="yes">Copy data to clipboard.</property>
             <property name="use_stock">True</property>
             <property name="always_show_image">True</property>
             <signal name="clicked" handler="copy_data" swapped="no"/>
@@ -207,6 +208,7 @@
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
+                    <property name="tooltip_text" translatable="yes">Open an image to analyse</property>
                     <property name="margin_top">2</property>
                     <property name="margin_bottom">4</property>
                     <property name="use_stock">True</property>
@@ -226,7 +228,7 @@
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
-                    <property name="tooltip_text" translatable="yes">Imports a JSON file</property>
+                    <property name="tooltip_text" translatable="yes">Imports a JSON file containing parameters and data</property>
                     <property name="margin_top">2</property>
                     <property name="margin_bottom">4</property>
                     <property name="image">import</property>
@@ -246,7 +248,7 @@
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
-                    <property name="tooltip_text" translatable="yes">Exports a JSON file</property>
+                    <property name="tooltip_text" translatable="yes">Exports a JSON file containing parameters and data</property>
                     <property name="margin_top">2</property>
                     <property name="margin_bottom">4</property>
                     <property name="image">export</property>
@@ -316,6 +318,7 @@
                           <object class="GtkEntry" id="tile_size_entry">
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
+                            <property name="tooltip_text" translatable="yes">Size of the tiles in px which the image is broken down into.</property>
                             <property name="halign">center</property>
                             <property name="valign">center</property>
                             <property name="margin_left">5</property>
@@ -345,12 +348,12 @@
                       <object class="GtkBox" id="tile_param_box1">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
+                        <property name="tooltip_text" translatable="yes">Number of pixels tiles overlap eachoter (reduces undetected circles at joins)</property>
                         <property name="orientation">vertical</property>
                         <child>
                           <object class="GtkLabel" id="tile_overlap_label">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
-                            <property name="tooltip_text" translatable="yes">Tile overlap in px</property>
                             <property name="halign">center</property>
                             <property name="valign">center</property>
                             <property name="label" translatable="yes">Tile Overlap</property>
@@ -366,6 +369,7 @@
                           <object class="GtkEntry" id="tile_overlap_entry">
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
+                            <property name="tooltip_text" translatable="yes">Tile overlap in px. Should be smaller than the tile size. </property>
                             <property name="halign">center</property>
                             <property name="valign">center</property>
                             <property name="margin_top">5</property>
@@ -413,6 +417,7 @@
                           <object class="GtkEntry" id="doubles_removal_entry">
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
+                            <property name="tooltip_text" translatable="yes">Maximum distance to remove duplicates resulting from tile overlap.</property>
                             <property name="halign">center</property>
                             <property name="valign">center</property>
                             <property name="margin_top">5</property>
@@ -448,12 +453,13 @@
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>
+                            <property name="tooltip_text" translatable="yes">Display a histogram of the measured data.</property>
                             <signal name="clicked" handler="display_histogram" swapped="no"/>
                             <child>
                               <object class="GtkImage" id="display_histogram_icon">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="stock">gtk-index</property>
+                                <property name="pixbuf">icons/view_histogram_16px.svg</property>
                                 <property name="icon_size">2</property>
                               </object>
                             </child>
@@ -470,13 +476,14 @@
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>
+                            <property name="tooltip_text" translatable="yes">Display a table of the measured data.</property>
                             <property name="margin_bottom">5</property>
                             <signal name="clicked" handler="display_info" swapped="no"/>
                             <child>
                               <object class="GtkImage" id="display_info_icon">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="stock">gtk-info</property>
+                                <property name="pixbuf">icons/view_results_16px.svg</property>
                                 <property name="icon_size">2</property>
                               </object>
                             </child>
@@ -610,6 +617,7 @@
                                       <object class="GtkSpinButton" id="spinbutton_1">
                                         <property name="visible">True</property>
                                         <property name="can_focus">True</property>
+                                        <property name="tooltip_text" translatable="yes">Size of the blur in px . Removes noise from image.</property>
                                         <property name="halign">center</property>
                                         <property name="valign">center</property>
                                         <property name="margin_bottom">3</property>
@@ -653,6 +661,7 @@
                                       <object class="GtkSpinButton" id="spinbutton_2">
                                         <property name="visible">True</property>
                                         <property name="can_focus">True</property>
+                                        <property name="tooltip_text" translatable="yes">Minimum distance between detected circle centers.</property>
                                         <property name="halign">center</property>
                                         <property name="valign">center</property>
                                         <property name="margin_bottom">3</property>
@@ -698,6 +707,7 @@ Upper Limit</property>
                                       <object class="GtkSpinButton" id="spinbutton_3">
                                         <property name="visible">True</property>
                                         <property name="can_focus">True</property>
+                                        <property name="tooltip_text" translatable="yes">Upper threshold used in edge detection. Start with larger values.</property>
                                         <property name="halign">center</property>
                                         <property name="valign">center</property>
                                         <property name="margin_bottom">3</property>
@@ -743,6 +753,7 @@ Threshold</property>
                                       <object class="GtkSpinButton" id="spinbutton_4">
                                         <property name="visible">True</property>
                                         <property name="can_focus">True</property>
+                                        <property name="tooltip_text" translatable="yes">Threshold for center detection. Start with larger values.</property>
                                         <property name="halign">center</property>
                                         <property name="valign">center</property>
                                         <property name="margin_bottom">3</property>
@@ -788,6 +799,7 @@ Threshold</property>
                                       <object class="GtkSpinButton" id="spinbutton_5">
                                         <property name="visible">True</property>
                                         <property name="can_focus">True</property>
+                                        <property name="tooltip_text" translatable="yes">Minimum radius to be detected. If unknown, put zero as default.</property>
                                         <property name="halign">center</property>
                                         <property name="valign">center</property>
                                         <property name="margin_bottom">3</property>
@@ -834,6 +846,7 @@ Threshold</property>
                                       <object class="GtkSpinButton" id="spinbutton_6">
                                         <property name="visible">True</property>
                                         <property name="can_focus">True</property>
+                                        <property name="tooltip_text" translatable="yes">Maximum radius to be detected. If unknown, put zero as default.</property>
                                         <property name="halign">center</property>
                                         <property name="valign">center</property>
                                         <property name="margin_bottom">3</property>
@@ -964,35 +977,11 @@ Threshold</property>
                     <property name="can_focus">False</property>
                     <property name="margin_right">10</property>
                     <child>
-                      <object class="GtkButton" id="add_button_icon">
-                        <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="receives_default">True</property>
-                        <property name="tooltip_text" translatable="yes">Add a new run</property>
-                        <property name="always_show_image">True</property>
-                        <signal name="clicked" handler="on_add" swapped="no"/>
-                        <child>
-                          <object class="GtkImage" id="add_button_ico">
-                            <property name="visible">True</property>
-                            <property name="can_focus">False</property>
-                            <property name="stock">gtk-add</property>
-                            <property name="icon_size">2</property>
-                          </object>
-                        </child>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">True</property>
-                        <property name="pack_type">end</property>
-                        <property name="position">0</property>
-                      </packing>
-                    </child>
-                    <child>
                       <object class="GtkButton" id="remove_button">
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
-                        <property name="tooltip_text" translatable="yes">Remove a run</property>
+                        <property name="tooltip_text" translatable="yes">Remove a scan from the scan qeue.</property>
                         <signal name="clicked" handler="on_remove" swapped="no"/>
                         <child>
                           <object class="GtkImage" id="remove_button_icon">
@@ -1007,6 +996,30 @@ Threshold</property>
                         <property name="expand">False</property>
                         <property name="fill">True</property>
                         <property name="padding">3</property>
+                        <property name="pack_type">end</property>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="add_button_icon">
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="receives_default">True</property>
+                        <property name="tooltip_text" translatable="yes">Add a scan with the given parameters to the qeue.</property>
+                        <property name="always_show_image">True</property>
+                        <signal name="clicked" handler="on_add" swapped="no"/>
+                        <child>
+                          <object class="GtkImage" id="add_button_ico">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="stock">gtk-add</property>
+                            <property name="icon_size">2</property>
+                          </object>
+                        </child>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
                         <property name="pack_type">end</property>
                         <property name="position">0</property>
                       </packing>
