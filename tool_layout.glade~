@@ -1161,6 +1161,116 @@ Threshold</property>
       <action-widget response="-5">button1</action-widget>
     </action-widgets>
   </object>
+  <object class="GtkListStore" id="liststore1">
+    <columns>
+      <!-- column-name gchararray1 -->
+      <column type="gchararray"/>
+    </columns>
+    <data>
+      <row>
+        <col id="0" translatable="yes">JSON</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">CSV</col>
+      </row>
+    </data>
+  </object>
+  <object class="GtkFileChooserDialog" id="save_chooser">
+    <property name="can_focus">False</property>
+    <property name="type_hint">dialog</property>
+    <property name="action">save</property>
+    <property name="do_overwrite_confirmation">True</property>
+    <child internal-child="vbox">
+      <object class="GtkBox">
+        <property name="can_focus">False</property>
+        <property name="orientation">vertical</property>
+        <property name="spacing">2</property>
+        <child internal-child="action_area">
+          <object class="GtkButtonBox">
+            <property name="can_focus">False</property>
+            <property name="layout_style">end</property>
+            <child>
+              <object class="GtkButton" id="close_button">
+                <property name="label" translatable="yes">Close</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkButton" id="saveas_button">
+                <property name="label" translatable="yes">Save</property>
+                <property name="name">file_open_button</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="can_default">True</property>
+                <property name="receives_default">True</property>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkComboBox" id="filetype_selector">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="model">liststore1</property>
+                <property name="has_entry">True</property>
+                <property name="entry_text_column">0</property>
+                <child internal-child="entry">
+                  <object class="GtkEntry" id="filetype_selection">
+                    <property name="can_focus">False</property>
+                    <property name="placeholder_text" translatable="yes">JSON</property>
+                    <signal name="changed" handler="on_filetype_selection_changed" swapped="no"/>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">2</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">False</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkBox">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="margin_top">3</property>
+            <child>
+              <placeholder/>
+            </child>
+            <child>
+              <placeholder/>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="padding">3</property>
+            <property name="position">2</property>
+          </packing>
+        </child>
+      </object>
+    </child>
+    <action-widgets>
+      <action-widget response="-6">close_button</action-widget>
+      <action-widget response="-3">saveas_button</action-widget>
+    </action-widgets>
+  </object>
   <object class="GtkFileChooserDialog" id="load_chooser">
     <property name="can_focus">False</property>
     <property name="type_hint">dialog</property>
@@ -1188,7 +1298,7 @@ Threshold</property>
             </child>
             <child>
               <object class="GtkButton" id="load_button">
-                <property name="label" translatable="yes">Load JSON</property>
+                <property name="label" translatable="yes">Load</property>
                 <property name="name">file_open_button</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
@@ -1232,81 +1342,6 @@ Threshold</property>
     <action-widgets>
       <action-widget response="-6">close_button1</action-widget>
       <action-widget response="-5">load_button</action-widget>
-    </action-widgets>
-  </object>
-  <object class="GtkFileChooserDialog" id="save_chooser">
-    <property name="can_focus">False</property>
-    <property name="type_hint">dialog</property>
-    <property name="action">save</property>
-    <property name="do_overwrite_confirmation">True</property>
-    <child internal-child="vbox">
-      <object class="GtkBox">
-        <property name="can_focus">False</property>
-        <property name="orientation">vertical</property>
-        <property name="spacing">2</property>
-        <child internal-child="action_area">
-          <object class="GtkButtonBox">
-            <property name="can_focus">False</property>
-            <property name="layout_style">end</property>
-            <child>
-              <object class="GtkButton" id="close_button">
-                <property name="label" translatable="yes">Close</property>
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">True</property>
-              </object>
-              <packing>
-                <property name="expand">True</property>
-                <property name="fill">True</property>
-                <property name="position">0</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkButton" id="saveas_button">
-                <property name="label" translatable="yes">Save JSON</property>
-                <property name="name">file_open_button</property>
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="can_default">True</property>
-                <property name="receives_default">True</property>
-              </object>
-              <packing>
-                <property name="expand">True</property>
-                <property name="fill">True</property>
-                <property name="position">1</property>
-              </packing>
-            </child>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">False</property>
-            <property name="position">0</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkBox">
-            <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <property name="margin_top">3</property>
-            <child>
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="padding">3</property>
-            <property name="position">2</property>
-          </packing>
-        </child>
-      </object>
-    </child>
-    <action-widgets>
-      <action-widget response="-6">close_button</action-widget>
-      <action-widget response="-3">saveas_button</action-widget>
     </action-widgets>
   </object>
 </interface>

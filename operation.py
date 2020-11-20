@@ -21,11 +21,8 @@ class hough_process():
                                      param2=hough_threshold,
                                      minRadius=min_radius,
                                      maxRadius=max_radius)
-
-
-
-        return circles[0]
-
+        return circles[0].astype(int)
+#create an object for the tiling process
 class tiles():
     def __init__(self, image, tile_size=800, overlap=0):
         self.image = image
@@ -36,6 +33,7 @@ class tiles():
         self.no_tiles_y = math.floor(self.height/(self.tile_size-self.overlap))
         self.current_image = None
 
+    #function that applies function at a given offset
     def iotile(self, function, args, kwargs, location):
         #generates offsets
         x_offset = (self.tile_size*location[0])
@@ -44,7 +42,6 @@ class tiles():
                                             int(x_offset):(int(x_offset)+self.tile_size%self.width)]
         try:
             small_array = (function(img, *args, **kwargs))
-            #print(small_array)
             small_array = np.uint16(np.around(small_array))
             small_array[:,0] = small_array[:,0]+x_offset
             small_array[:,1] = small_array[:,1]+y_offset
@@ -54,50 +51,52 @@ class tiles():
             return None
 
     def tile(self, function, *args, outputs=3, **kwargs):
+        #starts timer
         start = time.perf_counter()
+        #partial combines arguments into function for use in map fucntion
         partial_iotile = partial(self.iotile, function, args, kwargs)
+        #generates a list of tile locations
         locations = []
         large_array = np.empty((0,3), int)
         for i in range(0, self.no_tiles_x):
             for j in range(0, self.no_tiles_y):
                     locations.append((i,j))
-        print(locations)
         print('Please Wait, Calclulating...')
+        #ppe runs funciton on using each of the passed in locations. returns generator object
         with concurrent.futures.ProcessPoolExecutor() as executor:
             results = executor.map(partial_iotile, locations)
             for i in results:
                 if isinstance(i, (np.ndarray, np.generic)) == True:
                     large_array = np.append(large_array, i, axis=0)
+        #finish timer
         finish = time.perf_counter()
         print('finished in', start-finish, 'seconds')
         return large_array
 
+
     def remove_doubles(self, input_array, separation=10):
             input_array = np.append(input_array,np.full((len(input_array),1), False), axis=1)
+            #calculates distances betweeenxy coords returns a list of distances
             distances_between = (distance.pdist(input_array[:,:2]))
+            #generates index combinations for the list above
             poss_comb = (list(combinations(range(len(input_array)),2)))
 
 
             for i in range(len(distances_between)):
+                    #marks with true if distance is less than separation
                     if distances_between[i] < separation:
-                        #print("the following are too close:")
-                        #print(circles[poss_comb[i][0]],input_array[poss_comb[i][1]])
-                        #if radius is bigger mark for removal
                         if input_array[poss_comb[i][0]][2] < input_array[poss_comb[i][1]][2]:
                             input_array[poss_comb[i][1]][3] = True
                         else:
                             input_array[poss_comb[i][1]][3] = True
-            #print ('\n--marked array-- \n', input_array, '\n')
-                #remove doubles
+            #only keeps the column marked False
             input_array = input_array[input_array[:,3] == False]
             input_array = np.delete(input_array, 3, axis=1 )
-            #print ('\n--Doubles removed-- \n', input_array, '\n')
-            #print(distances_between)
 
             return input_array
 
 
-#----------------------RUN CODE-------------------------------#
+#----------------------debug CODE-------------------------------#
 '''
 #load image
 input_img = cv2.imread('test-img.JPG',1)
@@ -108,12 +107,6 @@ tile_array1 = tiles(eb_img)
 circles = tile_array1.tile(hough_process.hough, blur=5, dp=1, min_dist=80, canny_upper=86, hough_threshold=56, min_radius=0, max_radius=0)
 #function to remove close items (distance given) introduced by overlapping
 circles = tile_array1.remove_doubles(circles, separation=100)
-
-
-
-
-
-
 
 
 #*display output*

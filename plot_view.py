@@ -76,6 +76,8 @@ class DrawGraph:
         #note - reimports for blank image
         self.zoomed_image = mpimg.imread(self.image)[int(self.y)-int(self.tile_size/2): int(self.y)+int(self.tile_size/2),
                                     int(self.x)-int(self.tile_size/2) : int(self.x)+int(self.tile_size/2)]
+
+
         #converts the image to greyscale for the Hough process
         eb_img = cv2.cvtColor(self.zoomed_image, cv2.COLOR_BGR2GRAY)
         #runs hough process from operation.py, returns an array where i[0] is x, i[1] is y and i[2] is radius
@@ -92,12 +94,12 @@ class DrawGraph:
                 cv2.circle(self.zoomed_image,(i[0],i[1]),i[2],(0,255,0),2)
                 # draw the center of the circle
                 cv2.circle(self.zoomed_image,(i[0],i[1]),2,(0,0,255),3)
-                #clears axis
-                self.axzoom.cla()
-                #matplotlib funciton to hide axis
-                self.axzoom.axis('off')
-                #shows annotated image on preview axis
-                self.axzoom.imshow(self.zoomed_image)
+            #clears axis
+            self.axzoom.cla()
+            #matplotlib funciton to hide axis
+            self.axzoom.axis('off')
+            #shows annotated image on preview axis
+            self.axzoom.imshow(self.zoomed_image)
 
         #if no circles are detected (i.e incorrect paramters) display unannotated image
         except:
@@ -105,6 +107,7 @@ class DrawGraph:
             self.axzoom.axis('off')
             self.axzoom.imshow(self.zoomed_image)
             pass
+
 
     def zoom(self, x, y, **kwargs):
         #sets mouse x and y locations from arguments

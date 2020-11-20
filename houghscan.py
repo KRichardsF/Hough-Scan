@@ -1,4 +1,5 @@
 import gi
+import csv
 from operation import tiles, hough_process
 from plot_view import  DrawGraph, DrawHistogram
 gi.require_version("Gtk", "3.0")
@@ -30,6 +31,7 @@ class hough_params:
 class universal_params:
         data = np.empty((0,3), int)
         liststore = Gtk.ListStore(int, int, int)
+        filetype = 'JSON'
         tile_size = 800
         no_tiles_x = 12
         no_tiles_y = 10
@@ -39,7 +41,6 @@ class universal_params:
 
 
 class Handler:
-    #
     def add_run(run_list):
         run = hough_params()
         run_list.append(run)
@@ -183,7 +184,6 @@ class Handler:
             processing_spinner.start()
 
         else:
-            #context.add_class("suggested-action")
             run_button.set_label("Run")
             processing_spinner.stop()
 
@@ -310,8 +310,21 @@ class Handler:
             name_entered = main_setup.builder.get_object('filename_entry')
             file_name = dialog.get_filename()
             print(dialog.get_filename())
-            with open(f'{file_name}.json','w') as outfile:
-                json.dump(data, outfile)
+            if universal_params.filetype == 'JSON':
+                with open(f'{file_name}.json','w') as outfile:
+                    json.dump(data, outfile)
+            else:
+                try:
+                    with open(f'{file_name}.csv', 'w') as csvfile:
+                        writer = csv.writer(csvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+                        writer.writerow(['X','Y','Radius'])
+                        for i in data['output_data']:
+                            print(i)
+                            writer.writerow(i)
+
+
+                except IOError:
+                        print("I/O error")
 
         elif response == Gtk.ResponseType.CANCEL:
             print("Cancel clicked")
@@ -319,6 +332,11 @@ class Handler:
 
     def jsondecoder(jsondict):
         return namedtuple('X', jsondict.keys())(*jsondict.values())
+
+    def on_filetype_selection_changed(self,entry, *args):
+
+        universal_params.filetype = entry.get_text()
+        print('filetype changed to', universal_params.filetype)
 
     def on_importjson_pressed(self, *args):
         print('button working')
@@ -375,7 +393,6 @@ class main_setup:
     builder.add_from_file("tool_layout.glade")
     #passes XML's signals to various handlers as described in XML
     builder.connect_signals(Handler())
-
     #gets the main window as object
     window = builder.get_object("main_window")
     #gets box which the matplotlib viewer will be placed in as object
