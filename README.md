@@ -1,4 +1,6 @@
+
 <img src="Houghscan Icon.svg" width="15%" height="15%"><h1> Hough Scan </h1> 
+<a href="https://doi.org/10.5281/zenodo.4783636"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.4783636.svg" alt="DOI"></a>
 
 <p align="left">
 Application for detection and data extraction of circular objects, such as emulsion droplets, from microscopy images
