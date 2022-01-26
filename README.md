@@ -59,6 +59,8 @@ Application for detection and data extraction of circular objects, such as emuls
   <code>pip install scipy </code>
 <li> OpenCV
   <code>pip install opencv-python</code>
+<li> Gnome Icon Theme
+  <code>sudo apt-get install gnome-icon-theme</code>
   
 <h2><a name="User Guide"> User Guide </a></h2>
 <img src="./Readme_Images/Screenshot.png" width="50%" height="50%">
