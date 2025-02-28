@@ -4,8 +4,6 @@ import time
 from typing import List, Tuple, Union
 import numpy as np
 from itertools import combinations
-from scipy.spatial import distance
-from matplotlib import pyplot as plt
 import cv2
 
 np.set_printoptions(threshold=np.inf)
@@ -69,15 +67,17 @@ class TileProcessor:
         tile_result[:, 1] += y_offset * (self.tile_size - self.overlap)
         return tile_result
 
+    def euclidean_distance(self, a, b):
+        return np.linalg.norm(a - b)
+
     def remove_overlapping_circles(self, circles: np.ndarray, separation: int = 10) -> np.ndarray:
         """Remove overlapping circles resulting from tiling process (according to separation)."""
         marked_for_removal = np.full(len(circles), False)
-        distances_between = distance.pdist(circles[:, :2])
-        combinations_indices = list(combinations(range(len(circles)), 2))
-
-        for i, j in combinations_indices:
-            if distances_between[i] < separation and distances_between[j] < separation:
-                marked_for_removal[i] = marked_for_removal[j] = True
+        
+        for i in range(len(circles)):
+            for j in range(i + 1, len(circles)):
+                if self.euclidean_distance(circles[i, :2], circles[j, :2]) < separation:
+                    marked_for_removal[i] = marked_for_removal[j] = True
 
         valid_indices = np.where(~marked_for_removal)[0]
         return circles[valid_indices]
