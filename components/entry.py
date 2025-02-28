@@ -6,7 +6,7 @@ def ft_path(*c, target_id=None, **kwargs):
 def spinbox(label:str, current_value=1, minimum_value=0, maximum_value=10, decimal_points=0, increment_ammount=1, speed=100, acceleration=20, delay_before_start=200, *args, **kwargs):
     return(
         Div(
-            Script(src="scripts/fluid_spinbox.js"),
+            Script(src="/static/js/fluid_spinbox.js"),
             Label(
                 label,
                 fr="counterInput",
