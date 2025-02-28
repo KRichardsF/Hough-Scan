@@ -16,8 +16,7 @@ import io
 import base64
 import csv
 import sys
-import multiprocessing
-from multiprocessing import freeze_support
+import multiprocessing as mp
 import threading
 import requests
 import webview
@@ -29,6 +28,14 @@ import signal
 import sys
 import uvicorn
 from contextlib import asynccontextmanager
+import importlib
+
+# Check if Python 3.12+ is available
+PYTHON_3_12_OR_LATER = sys.version_info >= (3, 12)
+
+if PYTHON_3_12_OR_LATER:
+    sys.flags.lazy_imports = 1  # Enable built-in lazy imports in Python 3.12+
+
 
 # Add a global server variable
 server = None
@@ -478,11 +485,12 @@ def process_button_pressed():
             "Processing Image",
             Div(cls="p-2"),
             Svg(
-                Path(d='M12,1A11,11,0,1,0,23,12,11,11,0,0,0,12,1Zm0,19a8,8,0,1,1,8-8A8,8,0,0,1,12,20Z', opacity='.25'),
-                Path(d='M10.14,1.16a11,11,0,0,0-9,8.92A1.59,1.59,0,0,0,2.46,12,1.52,1.52,0,0,0,4.11,10.7a8,8,0,0,1,6.66-6.61A1.42,1.42,0,0,0,12,2.69h0A1.57,1.57,0,0,0,10.14,1.16Z'),
-                viewbox='0 0 24 24',
-                aria_hidden='true',
-                cls='size-6 fill-neutral-600 motion-safe:animate-spin dark:fill-neutral-300'
+            Path(d='M12,1A11,11,0,1,0,23,12,11,11,0,0,0,12,1Zm0,19a8,8,0,1,1,8-8A8,8,0,0,1,12,20Z', opacity='.25'),
+            Path(d='M10.14,1.16a11,11,0,0,0-9,8.92A1.59,1.59,0,0,0,2.46,12,1.52,1.52,0,0,0,4.11,10.7a8,8,0,0,1,6.66-6.61A1.42,1.42,0,0,0,12,2.69h0A1.57,1.57,0,0,0,10.14,1.16Z'),
+            xmlns='http://www.w3.org/2000/svg',
+            viewbox='0 0 24 24',
+            aria_hidden='true',
+            cls='size-5 fill-on-surface motion-safe:animate-spin dark:fill-on-surface-dark'
             ),
             type="button",
             hx_post="/process_image",
@@ -625,7 +633,7 @@ def on_window_close():
 
 # Modify your main block
 if __name__ == '__main__':
-    freeze_support()
+    mp.set_start_method("spawn")  # Explicitly setting start method
     
     server_thread = threading.Thread(target=run_server, daemon=True)
     server_thread.start()
