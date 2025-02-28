@@ -1,125 +1,122 @@
 import concurrent.futures
-from functools import partial
 import math
 import time
+from typing import List, Tuple, Union
 import numpy as np
-import matplotlib.mlab as mlab
-from scipy.stats import norm
-from itertools import  combinations
+from itertools import combinations
 from scipy.spatial import distance
-import sys
 from matplotlib import pyplot as plt
 import cv2
-np.set_printoptions(threshold=sys.maxsize)
 
-#class that applies OpenCV's blur followed by HoughCircles to return a list of circles with x,y coordinates
-class hough_process():
-    def hough(image, blur=5, dp=1, min_dist=80, canny_upper=86, hough_threshold=56, min_radius=0, max_radius=0):
-        image2 = cv2.medianBlur(image,blur)
-        circles = cv2.HoughCircles(image2,cv2.HOUGH_GRADIENT,dp,min_dist,
-                                    param1=canny_upper,
-                                     param2=hough_threshold,
-                                     minRadius=min_radius,
-                                     maxRadius=max_radius)
-        return circles[0].astype(int)
-#create an object for the tiling process
-class tiles():
-    def __init__(self, image, tile_size=800, overlap=0):
+np.set_printoptions(threshold=np.inf)
+
+class CircleDetector:
+    @staticmethod
+    def detect_circles(image: np.ndarray, blur: int = 5, dp: int = 1, min_dist: int = 80,
+                       canny_upper: int = 86, hough_threshold: int = 56,
+                       min_radius: int = 0, max_radius: int = 0) -> np.ndarray:
+        """applies OpenCV's blur followed by HoughCircles to return a list of circles with x,y coordinates"""
+        blurred_image = cv2.medianBlur(image, blur)
+        circles = cv2.HoughCircles(blurred_image, cv2.HOUGH_GRADIENT, dp, min_dist,
+                                   param1=canny_upper, param2=hough_threshold,
+                                   minRadius=min_radius, maxRadius=max_radius)
+        return circles[0].astype(int) if circles is not None else np.empty((0, 3), int)
+
+class TileProcessor:
+    def __init__(self, image: np.ndarray, tile_size: int = 800, overlap: int = 0):
+        """TileProcessor object containing given parameters for tiling and functions to tile and process an image"""
         self.image = image
         self.height, self.width = self.image.shape[:2]
         self.tile_size = tile_size
         self.overlap = overlap
-        self.no_tiles_x = math.floor(self.width/(self.tile_size-self.overlap))
-        self.no_tiles_y = math.floor(self.height/(self.tile_size-self.overlap))
-        self.current_image = None
+        self.no_tiles_x = math.floor((self.width - self.tile_size) / (self.tile_size - self.overlap)) + 1
+        self.no_tiles_y = math.floor((self.height - self.tile_size) / (self.tile_size - self.overlap)) + 1
 
-    #function that applies function at a given offset
-    def iotile(self, function, args, kwargs, location):
-        #generates offsets
-        x_offset = (self.tile_size*location[0])
-        y_offset = (self.tile_size*location[1])
-        img = self.image[int(y_offset):(int(y_offset)+self.tile_size%self.height),
-                                            int(x_offset):(int(x_offset)+self.tile_size%self.width)]
-        try:
-            small_array = (function(img, *args, **kwargs))
-            small_array = np.uint16(np.around(small_array))
-            small_array[:,0] = small_array[:,0]+x_offset
-            small_array[:,1] = small_array[:,1]+y_offset
-            return small_array
+    class Tile():
+        def __init__(self, x: int, y:int, img: np.ndarray):
+            self.x = x
+            self.y = y
+            self.img = img
 
-        except:
+    def split_into_tiles(self):
+        """Split the image into tiles (TileProcessor.Tile objects)."""
+        tiles = []
+        for i in range(self.no_tiles_x):
+            for j in range(self.no_tiles_y):
+                x_start = i * (self.tile_size - self.overlap)
+                y_start = j * (self.tile_size - self.overlap)
+                img = self.image[y_start:y_start + self.tile_size,
+                                x_start:x_start + self.tile_size]
+                tiles.append(self.Tile(i, j, img))
+        return tiles
+
+    def apply_function_and_position(self, function: callable, args: Tuple, kwargs: dict, tile: Tile) -> np.ndarray:
+        """Apply a function to a tile and return result (circles) ajusted for any positioning needed wrt the larger image"""
+        x_offset, y_offset, img = [tile.x, tile.y, tile.img]
+        try:    
+            tile_result = function(img, *args, **kwargs)
+            if isinstance(tile_result, (np.ndarray, np.generic)):
+                tile_result = self.position_circles(tile_result, x_offset, y_offset)
+                return tile_result
+        except Exception as e:
+            print(f"Error: {e}")
             return None
+    
+    def position_circles(self, tile_result: np.ndarray, x_offset: int, y_offset:int):
+        """Offsets circle location according to tile position"""
+        tile_result = np.uint16(np.around(tile_result))
+        tile_result[:, 0] += x_offset * (self.tile_size - self.overlap)
+        tile_result[:, 1] += y_offset * (self.tile_size - self.overlap)
+        return tile_result
 
-    def tile(self, function, *args, outputs=3, **kwargs):
-        #starts timer
-        start = time.perf_counter()
-        #partial combines arguments into function for use in map fucntion
-        partial_iotile = partial(self.iotile, function, args, kwargs)
-        #generates a list of tile locations
-        locations = []
-        large_array = np.empty((0,3), int)
-        for i in range(0, self.no_tiles_x):
-            for j in range(0, self.no_tiles_y):
-                    locations.append((i,j))
-        print('Please Wait, Calclulating...')
-        #ppe runs funciton on using each of the passed in locations. returns generator object
+    def remove_overlapping_circles(self, circles: np.ndarray, separation: int = 10) -> np.ndarray:
+        """Remove overlapping circles resulting from tiling process (according to separation)."""
+        marked_for_removal = np.full(len(circles), False)
+        distances_between = distance.pdist(circles[:, :2])
+        combinations_indices = list(combinations(range(len(circles)), 2))
+
+        for i, j in combinations_indices:
+            if distances_between[i] < separation and distances_between[j] < separation:
+                marked_for_removal[i] = marked_for_removal[j] = True
+
+        valid_indices = np.where(~marked_for_removal)[0]
+        return circles[valid_indices]
+    
+    def process_tiles_parallel(self, function: callable, *args, **kwargs) -> np.ndarray:
+        """Tiles image and processes tiles in parallel using the specified function. Filters to correct for tiling and returns array of circles."""
+        start_time = time.perf_counter()
+        tiles = self.split_into_tiles()
+
         with concurrent.futures.ProcessPoolExecutor() as executor:
-            results = executor.map(partial_iotile, locations)
-            for i in results:
-                if isinstance(i, (np.ndarray, np.generic)) == True:
-                    large_array = np.append(large_array, i, axis=0)
-        #finish timer
-        finish = time.perf_counter()
-        print('finished in', start-finish, 'seconds')
-        return large_array
+            results = list(executor.map(self.apply_function_and_position, [function] * len(tiles), [args] * len(tiles), [kwargs] * len(tiles), tiles))
+        all_circles = np.concatenate(results, axis=0)
+        filtered_circles = self.remove_overlapping_circles(all_circles, separation=100)
+
+        finish_time = time.perf_counter()
+        print(f'Processing finished in {finish_time - start_time:.2f} seconds')
+        return filtered_circles
 
 
-    def remove_doubles(self, input_array, separation=10):
-            input_array = np.append(input_array,np.full((len(input_array),1), False), axis=1)
-            #calculates distances betweeenxy coords returns a list of distances
-            distances_between = (distance.pdist(input_array[:,:2]))
-            #generates index combinations for the list above
-            poss_comb = (list(combinations(range(len(input_array)),2)))
+def main():
+    input_img = cv2.imread('test-img.JPG', 1)
+    gray_img = cv2.cvtColor(input_img, cv2.COLOR_BGR2GRAY)
 
+    tile_processor = TileProcessor(gray_img)
+    detected_circles = tile_processor.process_tiles_parallel(
+        CircleDetector.detect_circles,
+        blur=5, dp=1, min_dist=80, canny_upper=86, hough_threshold=56, min_radius=0, max_radius=0
+    )
 
-            for i in range(len(distances_between)):
-                    #marks with true if distance is less than separation
-                    if distances_between[i] < separation:
-                        if input_array[poss_comb[i][0]][2] < input_array[poss_comb[i][1]][2]:
-                            input_array[poss_comb[i][1]][3] = True
-                        else:
-                            input_array[poss_comb[i][1]][3] = True
-            #only keeps the column marked False
-            input_array = input_array[input_array[:,3] == False]
-            input_array = np.delete(input_array, 3, axis=1 )
+    for circle in detected_circles:
+        cv2.circle(input_img, (circle[0], circle[1]), circle[2], (0, 255, 0), 2)
+        cv2.circle(input_img, (circle[0], circle[1]), 2, (0, 0, 255), 3)
 
-            return input_array
+    plt.figure('Histogram')
+    plt.hist(detected_circles[:, 2], bins=10)
+    plt.figure('Picture', figsize=[10, 10])
+    input_img = cv2.cvtColor(input_img, cv2.COLOR_BGR2RGB)
+    plt.imshow(input_img, cmap='gray')
+    plt.show()
 
-
-#----------------------debug CODE-------------------------------#
-'''
-#load image
-input_img = cv2.imread('test-img.JPG',1)
-eb_img = cv2.cvtColor(input_img, cv2.COLOR_BGR2GRAY)
-#creates an instance of the tile set
-tile_array1 = tiles(eb_img)
-#applies a given function across each of the the tiles and returns a list
-circles = tile_array1.tile(hough_process.hough, blur=5, dp=1, min_dist=80, canny_upper=86, hough_threshold=56, min_radius=0, max_radius=0)
-#function to remove close items (distance given) introduced by overlapping
-circles = tile_array1.remove_doubles(circles, separation=100)
-
-
-#*display output*
-for i in circles:
-    #draw the outer circle
-    cv2.circle(input_img,(i[0],i[1]),i[2],(0,255,0),2)
-    # draw the center of the circle
-    cv2.circle(input_img,(i[0],i[1]),2,(0,0,255),3)
-
-plt.figure('Histogram')
-plt.hist(circles[:,2], bins = 10)
-plt.figure('Picture', figsize=[10,10])
-input_img = cv2.cvtColor(input_img, cv2.COLOR_BGR2RGB)
-plt.imshow(input_img, cmap='gray')
-plt.show()
-'''
+if __name__ == "__main__":
+    main()
