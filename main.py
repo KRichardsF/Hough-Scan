@@ -25,7 +25,13 @@ import os
 import numpy as np
 from dataclasses import dataclass
 from typing import Optional
+import signal
+import sys
+import uvicorn
+from contextlib import asynccontextmanager
 
+# Add a global server variable
+server = None
 
 # Added for downloadable responses
 from fastapi.responses import Response, FileResponse
@@ -573,18 +579,6 @@ def update_preview():
 
 os.environ["QT_QPA_PLATFORM"] = "wayland"
 
-def run_server(app, host="127.0.0.1", port=5001):
-    """Starts the FastAPI server in a separate thread on an available port."""
-    server_thread = threading.Thread(
-        target=uvicorn.run,
-        args=(app,),
-        kwargs={"host": host, "port": port, "log_level": "info"},
-        daemon=True
-    )
-    server_thread.start()
-    return port, server_thread  # Return the port used
-
-
 def wait_for_server(url, timeout=15):
     start = time.time()
     while time.time() - start < timeout:
@@ -596,18 +590,69 @@ def wait_for_server(url, timeout=15):
             time.sleep(0.5)  # Wait before retrying
     raise Exception("Server did not start in time.")
 
-if __name__ == "__main__":
-    from main import app
-    freeze_support()
+# Replace your run_server function with this:
+def run_server():
+    """Run FastAPI's Uvicorn server in a separate thread with proper shutdown."""
+    global server
+    
+    config = uvicorn.Config(app, host="127.0.0.1", port=5001, log_level="info")
+    server = uvicorn.Server(config)
+    
+    server_thread = threading.Thread(
+        target=server.run,
+        daemon=True
+    )
+    server_thread.start()
 
-    PORT, server_thread = run_server(app, host="127.0.0.1", port=PORT)
+    # Wait until the server is available before continuing
+    time.sleep(2)  # Give the server time to start
 
     try:
-        wait_for_server(f"http://127.0.0.1:{PORT}")
+        wait_for_server("http://127.0.0.1:5001")
+    except Exception as e:
+        print(f"Server failed to start: {e}")
+        sys.exit(1)
+
+# Add this function to handle window closing
+def on_window_close():
+    """Handle the window close event to properly shut down the application."""
+    print("Window closing, shutting down server...")
+    if server:
+        server.should_exit = True
+    
+    # Schedule the actual exit to happen after webview has a chance to clean up
+    threading.Timer(0.5, lambda: os._exit(0)).start()
+
+# Modify your main block
+if __name__ == '__main__':
+    freeze_support()
+    
+    server_thread = threading.Thread(target=run_server, daemon=True)
+    server_thread.start()
+    
+    try:
+        wait_for_server("http://127.0.0.1:5001")
     except Exception as e:
         print(f"Error: {e}")
         sys.exit(1)
 
-    window = webview.create_window("Hough Scan", f"http://127.0.0.1:{PORT}", width=1200, height=800, zoomable=True)
+    # Create window with the close callback
+    window = webview.create_window(
+        "Hough Scan", 
+        "http://127.0.0.1:5001", 
+        width=1200, 
+        height=800, 
+        zoomable=True
+    )
+    
+    # Register the close event handler
+    window.events.closed += on_window_close
+    
+    # Add a SIGINT handler (for Ctrl+C)
+    def handle_sigint(sig, frame):
+        print("Ctrl+C detected, shutting down...")
+        on_window_close()
+    
+    signal.signal(signal.SIGINT, handle_sigint)
+    
     webview.start()
-
