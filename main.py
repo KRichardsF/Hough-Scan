@@ -59,7 +59,7 @@ class Parameters:
 @dataclass
 class Settings:
     scan_name_gen = scan_name_generator()
-    image_path: str = 'Houghscan Background.png'
+    image_path: str = Path.cwd() / 'static' / 'images' / 'Houghscan Background.png'
     image = PILImage.open(image_path).convert("RGB")
     active_parameters = Parameters(scan_name=next(scan_name_gen))
     scan_parameters = [active_parameters]
@@ -260,7 +260,12 @@ def new():
         file_types=["Image Files (*.jpg;*.png;*.tiff)"]
     )
 
-    file_path = Path(next(iter(file_path), current_settings.image_path))
+    if isinstance(file_path, (tuple, list)):  # Handle tuple/list return values
+        file_path = file_path[0] if file_path else None
+
+    if file_path:
+        file_path = Path(file_path).resolve()  # Convert to absolute path and normalize
+
     if file_path.exists():
         current_settings.image_path = str(file_path)
         current_settings.image = PILImage.open(file_path).convert("RGB")
@@ -317,12 +322,16 @@ def export_json():
             }
         
         
-        file_path = Path(file_path)
-        with file_path.open("w") as f:
-            json.dump(export_data, f, indent=2)
-        print(f"Saved to {file_path}")
-        return f"Saved to {file_path}"
-    return "No file selected"
+        if isinstance(file_path, (tuple, list)):  # Ensure correct handling
+            file_path = file_path[0] if file_path else None
+
+        if file_path:
+            file_path = Path(file_path).resolve()
+            with file_path.open("w") as f:
+                json.dump(export_data, f, indent=2)
+            print(f"Saved to {file_path}")
+            return f"Saved to {file_path}"
+        return "No file selected"
 
 import numpy as np
 import csv
@@ -336,10 +345,11 @@ def export_csv():
         file_types=["CSV (*.csv)"]
     )
 
-    if file_path:
-        file_path = next(iter(file_path), None)
+    if isinstance(file_path, (tuple, list)):  # Ensure correct handling
+        file_path = file_path[0] if file_path else None
 
-        file_path = Path(file_path)
+    if file_path:
+        file_path = Path(file_path).resolve()  # Fix for Windows paths
         with file_path.open("w", newline="") as f:
 
             writer = csv.writer(f)
