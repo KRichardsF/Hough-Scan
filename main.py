@@ -7,6 +7,7 @@ from PIL import Image as PILImage
 from components import button, menu, split, entry, selector
 
 # Standard libraries (keep minimal)
+from pathlib import Path
 import copy
 import json
 import time
@@ -58,8 +59,8 @@ class Parameters:
 @dataclass
 class Settings:
     scan_name_gen = scan_name_generator()
-    image_path: str = 'test-image.jpg'
-    image = PILImage.open(image_path)
+    image_path: str = 'Houghscan Background.png'
+    image = PILImage.open(image_path).convert("RGB")
     active_parameters = Parameters(scan_name=next(scan_name_gen))
     scan_parameters = [active_parameters]
     preview_position: tuple = (0,0)
@@ -76,10 +77,10 @@ headers = (
     Script(src="static/js/alpine.js", defer=True),
     Script(src="/static/js/d3.js", defer=True),
     Script(src="/static/js/split.js", defer=True),
-    Script(src="scripts/fluid_spinbox.js"),
-    Script(src="scripts/d3_image_canvas.js", defer=True),
-    Link(rel="icon", type="image/x-icon", href="/images/favicon.ico"),
-    Link(rel="stylesheet", type="text/css", href="styles/responsive.css"), 
+    Script(src="/static/js/fluid_spinbox.js"),
+    Script(src="/static/js/d3_image_canvas.js", defer=True),
+    # Link(rel="icon", type="image/x-icon", href="/images/favicon.ico"),
+    Link(rel="stylesheet", type="text/css", href="/static/css/responsive.css"), 
 
 )
 
@@ -259,8 +260,10 @@ def new():
         file_types=["Image Files (*.jpg;*.png;*.tiff)"]
     )
 
-    current_settings.image_path = next(iter(file_path), current_settings.image_path)
-    current_settings.image = PILImage.open(current_settings.image_path).convert("RGB")
+    file_path = Path(next(iter(file_path), current_settings.image_path))
+    if file_path.exists():
+        current_settings.image_path = str(file_path)
+        current_settings.image = PILImage.open(file_path).convert("RGB")
 
     return (
         home(),
@@ -277,7 +280,8 @@ def save_as():
         file_types=["JSON (*.json)  "]
         )
     if file_path:
-        with open(file_path, "w") as f:
+        file_path = Path(file_path)
+        with file_path.open("w") as f:
             # Export current settings as JSON for saving
             json.dump(current_settings, f, default=lambda o: o.__dict__, indent=2)
         print(f"Saved to {file_path}")
@@ -313,7 +317,8 @@ def export_json():
             }
         
         
-        with open(file_path, "w") as f:
+        file_path = Path(file_path)
+        with file_path.open("w") as f:
             json.dump(export_data, f, indent=2)
         print(f"Saved to {file_path}")
         return f"Saved to {file_path}"
@@ -334,7 +339,9 @@ def export_csv():
     if file_path:
         file_path = next(iter(file_path), None)
 
-        with open(file_path, "w", newline="") as f:
+        file_path = Path(file_path)
+        with file_path.open("w", newline="") as f:
+
             writer = csv.writer(f)
 
             for scan in current_settings.scan_parameters:

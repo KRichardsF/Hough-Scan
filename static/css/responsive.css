@@ -1,0 +1,68 @@
+:root {
+    --dynamic-scale: 1;
+}
+
+body {
+    transform-origin: 0 0;
+    overflow: hidden;
+}
+
+/* Default scale (Full HD screens and above) */
+@media (min-width: 1920px) {
+    :root {
+        --dynamic-scale: 1;
+    }
+    body {
+        transform: scale(1);
+        width: 100vw;
+        height: 100vh;
+    }
+}
+
+/* Medium screens (HD resolution) */
+@media (max-width: 1919px) and (min-width: 1366px) {
+    :root {
+        --dynamic-scale: 0.85;
+    }
+    body {
+        transform: scale(0.85);
+        width: calc(100vw / 0.85);
+        height: calc(100vh / 0.85);
+    }
+}
+
+/* Smaller laptops / tablets */
+@media (max-width: 1365px) and (min-width: 1024px) {
+    :root {
+        --dynamic-scale: 0.75;
+    }
+    body {
+        transform: scale(0.75);
+        width: calc(100vw / 0.75);
+        height: calc(100vh / 0.75);
+    }
+}
+
+/* Tablets / Small screens */
+@media (max-width: 1023px) and (min-width: 768px) {
+    :root {
+        --dynamic-scale: 0.65;
+    }
+    body {
+        transform: scale(0.65);
+        width: calc(100vw / 0.65);
+        height: calc(100vh / 0.65);
+    }
+}
+
+/* Mobile screens */
+@media (max-width: 767px) {
+    :root {
+        --dynamic-scale: 0.5;
+    }
+    body {
+        transform: scale(0.5);
+        width: calc(100vw / 0.5);
+        height: calc(100vh / 0.5);
+    }
+}
