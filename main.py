@@ -9,6 +9,7 @@ from components import button, menu, split, entry, selector
 # Standard libraries (keep minimal)
 from pathlib import Path
 import copy
+import socket
 import json
 import time
 import io
@@ -28,6 +29,18 @@ from typing import Optional
 
 # Added for downloadable responses
 from fastapi.responses import Response, FileResponse
+
+def find_available_port(starting_port=5001, max_attempts=10):
+    """Finds an available port starting from `starting_port`."""
+    for port in range(starting_port, starting_port + max_attempts):
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            if s.connect_ex(("127.0.0.1", port)) != 0:  # Port is free
+                return port
+    raise RuntimeError("No available ports found in the given range.")
+
+# Find an available port at runtime
+PORT = find_available_port()
+
 
 def scan_name_generator():
     count = 1
@@ -560,31 +573,17 @@ def update_preview():
 
 os.environ["QT_QPA_PLATFORM"] = "wayland"
 
-def run_server():
-    """Run FastAPI's Uvicorn server in a separate thread."""
-    if getattr(sys, 'frozen', False):
-        # Running inside PyInstaller
-        import main
-        app = main.app  # Import app from the bundled script
-    else:
-        from main import app  # Normal import
-
+def run_server(app, host="127.0.0.1", port=5001):
+    """Starts the FastAPI server in a separate thread on an available port."""
     server_thread = threading.Thread(
         target=uvicorn.run,
         args=(app,),
-        kwargs={"host": "127.0.0.1", "port": 5001, "log_level": "info"},
+        kwargs={"host": host, "port": port, "log_level": "info"},
         daemon=True
     )
     server_thread.start()
+    return port, server_thread  # Return the port used
 
-    # Wait until the server is available before continuing
-    time.sleep(2)  # Give the server time to start
-
-    try:
-        wait_for_server("http://127.0.0.1:5001")
-    except Exception as e:
-        print(f"Server failed to start: {e}")
-        sys.exit(1)
 
 def wait_for_server(url, timeout=15):
     start = time.time()
@@ -597,17 +596,18 @@ def wait_for_server(url, timeout=15):
             time.sleep(0.5)  # Wait before retrying
     raise Exception("Server did not start in time.")
 
-if __name__ == '__main__':
+if __name__ == "__main__":
+    from main import app
     freeze_support()
-    #multiprocessing.set_start_method("spawn")  # Fix for PyInstaller on Windows
-    server_thread = threading.Thread(target=run_server, daemon=True)
-    server_thread.start()
+
+    PORT, server_thread = run_server(app, host="127.0.0.1", port=PORT)
+
     try:
-        wait_for_server("http://127.0.0.1:5001")
+        wait_for_server(f"http://127.0.0.1:{PORT}")
     except Exception as e:
         print(f"Error: {e}")
         sys.exit(1)
 
-    window = webview.create_window("Hough Scan", "http://127.0.0.1:5001", width=1200, height=800, zoomable=True)
-
+    window = webview.create_window("Hough Scan", f"http://127.0.0.1:{PORT}", width=1200, height=800, zoomable=True)
     webview.start()
+
