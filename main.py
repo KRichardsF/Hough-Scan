@@ -1,4 +1,4 @@
-# Import only required components
+import pyi_splash
 from fasthtml.common import *
 from fasthtml.svg import SvgInb, Circle
 from fasthtml.components import Defs, ClipPath, Rect, Image, G
@@ -6,7 +6,6 @@ from operation import CircleDetector, TileProcessor
 from PIL import Image as PILImage
 from components import button, menu, split, entry, selector
 
-# Standard libraries (keep minimal)
 from pathlib import Path
 import copy
 import socket
@@ -16,7 +15,7 @@ import io
 import base64
 import csv
 import sys
-import multiprocessing as mp
+from multiprocessing import freeze_support
 import threading
 import requests
 import webview
@@ -31,12 +30,6 @@ import uvicorn
 from contextlib import asynccontextmanager
 import importlib
 
-PYTHON_3_12_OR_LATER = sys.version_info >= (3, 12)
-
-if PYTHON_3_12_OR_LATER and os.getenv("PYTHONLAZYIMPORTS") != "1":
-    print("Enabling Lazy load...")
-    os.environ["PYTHONLAZYIMPORTS"] = "1"
-# Add a global server variable
 server = None
 
 # Added for downloadable responses
@@ -612,10 +605,11 @@ def run_server():
     server_thread.start()
 
     # Wait until the server is available before continuing
-    time.sleep(2)  # Give the server time to start
+    time.sleep(0.5)  # Give the server time to start
 
     try:
         wait_for_server("http://127.0.0.1:5001")
+        pyi_splash.close()
     except Exception as e:
         print(f"Server failed to start: {e}")
         sys.exit(1)
@@ -633,8 +627,7 @@ def on_window_close():
 # Modify your main block
 if __name__ == '__main__':
     # Only apply on Windows and only in main process
-    if platform.system() == "Windows":
-        mp.set_start_method("spawn", force=True)  # Prevents re-execution loops # Explicitly setting start method
+    freeze_support()
     
     server_thread = threading.Thread(target=run_server, daemon=True)
     server_thread.start()
