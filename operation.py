@@ -27,8 +27,8 @@ class TileProcessor:
         self.height, self.width = self.image.shape[:2]
         self.tile_size = tile_size
         self.overlap = overlap
-        self.no_tiles_x = math.ceil((self.width - self.tile_size) / (self.tile_size - self.overlap))
-        self.no_tiles_y = math.ceil((self.height - self.tile_size) / (self.tile_size - self.overlap))
+        self.no_tiles_x = math.ceil(self.width / (self.tile_size - self.overlap))
+        self.no_tiles_y = math.ceil(self.height / (self.tile_size - self.overlap))
 
     class Tile():
         def __init__(self, x: int, y:int, img: np.ndarray):
