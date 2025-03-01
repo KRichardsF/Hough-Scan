@@ -1,5 +1,5 @@
 
-<img src="Houghscan Icon.svg" width="15%" height="15%"><h1> Hough Scan </h1> 
+<img src="./static/icons/icon.svg" width="15%" height="15%"><h1> Hough Scan </h1> 
 <a href="https://doi.org/10.5281/zenodo.4783636"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.4783636.svg" alt="DOI"></a>
 
 <p align="left">
@@ -20,7 +20,7 @@ Application for detection and data extraction of circular objects, such as emuls
  <h2><a name="Installation"> Installation (.exe file)</a></h2>
  <h3> Windows </h3>
  <ul>
-    <li> Download the zip file found <a href="https://github.com/KRichardsF/Hough-Scan/releases">here</a> 
+    <li> Download the latest zip file found <a href="https://github.com/KRichardsF/Hough-Scan/releases">here</a> 
     <li> Extract the file to an appropriate folder (i.e c:program files/hough-scan)
     <li> (optional) copy and paste a shortcut to "houghscan.exe your desktop/start menu
     <li> Double click "houghscan.exe" to run the program
@@ -29,38 +29,17 @@ Application for detection and data extraction of circular objects, such as emuls
 <h2><a name="Installation"> Installation (Developer Build)</a></h2>
  
 
-<h3> linux (Ubuntu) </h3>
+<h3> Winows / linux </h3>
 <ul>
-   <li>Install dependencies.<br>
+   <li>Install dependencies<br>
    <li>Navigate to Hough-Scan directory in terminal and run:
-   <code> Python houghscan.py </code>
+   <code> Python main.py </code>
 </ul>
 
-<h3> Windows </h3>
- <p> 
-  Hough Scan is created using GTK3+, the easiest way to run the developer build is via WSL (below). 
-</p>
 
-<ul>
-  <li> Install WSL and linux distro of your choice. Guide: https://wiki.ubuntu.com/WSL <br>
-  GUI support is comming in a future update (https://devblogs.microsoft.com/commandline/the-windows-subsystem-for-linux-build-2020-summary/#wsl-gui)
-  but for now you will need to enable support via X server. (in more detail at https://wiki.ubuntu.com/WSL)<br>
-  <li> Follow linux installation instructions.</p>
-  <li> Navigate to Hough-Scan directory in terminal and run
-  <code> Python houghscan.py </code>
-</ul>
 
 <h2><a name="Dependencies"> Dependencies </a></h2>
-<li> Matplotlib 
-  <code> pip install matplotlib </code>
-<li> Numpy
-  <code> pip install numpy </code>
-<li> Scipy
-  <code>pip install scipy </code>
-<li> OpenCV
-  <code>pip install opencv-python</code>
-<li> Gnome Icon Theme
-  <code>sudo apt-get install gnome-icon-theme</code>
+<li> See build > requirements.txt 
   
 <h2><a name="User Guide"> User Guide </a></h2>
 <img src="./Readme_Images/Screenshot.png" width="50%" height="50%">
@@ -68,7 +47,7 @@ Application for detection and data extraction of circular objects, such as emuls
   <li> Step 1: Run the program
   <li> Step 2: Open an image
   <li> Step 3: Set the tile size depending on how densely populated with circles your image is. Make sure that the 'number of tiles' X 'size of tiles' is greater than the image size
-  <li> step 4: click an area of interest on the image and set the parameters on the right hand side. Start with 'Hough Threshold' and 'Canny Upper' at a higher value (60+) if you have a complex image.
+  <li> step 4: click an area of interest on the image and set the parameters on the right hand side. Start with 'Hough Threshold' and 'Canny Upper' at a higher value (60+) if you have a complex image. Setting an Upper and lower radius will speed up processing time.
   <li> Step 5: Click run. (results may take some time) 
   <li> Step 6: Press the icons adjacent to the run button to get a histogram and list of data
   <li> Step 7 (optional): Add additional runs by pressing the + or - button
@@ -76,15 +55,14 @@ Application for detection and data extraction of circular objects, such as emuls
 
 <h2><a name="Planned Updates"> Planned Updates </a></h2>
 <ul>
-<li>none(currently)
+<li> Ability to abort acquisitions
+<li> Loading bar
+<li> Show circle size histogram
   </ul>
 
 <h2><a name="Recent Changes"> Recent Changes </a></h2>
 <ul>
-  <li> Executable version
-  <li> Export as JSON file 
-  <li> Tile by percentage overlap
-  <li> Sepparate tile sizes for different runs
+<li> Remade application using web UI
 </ul>
 
 
@@ -127,6 +105,7 @@ Application for detection and data extraction of circular objects, such as emuls
 
 <h2><a name="Changelog"> Changelog </a></h2>
 <ul>
+  <li> 28FEB25: Reconfigured software with web UI for better compatibility
   <li> 07AUG20: Export as JSON file
   <li> 07AUG20: Executable Version for Windows
   <li> 07AUG20: Tile by Percentage Overlap added
