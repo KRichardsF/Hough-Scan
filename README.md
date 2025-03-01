@@ -118,7 +118,8 @@ Application for detection and data extraction of circular objects, such as emuls
 
 <h2><a name="Known Issues"> Known Issues </a></h2>
 <ul>
-  <li> Using .exe, Windows security treats file as threat. (click more> run anyway to resolve)
+  <li> Using .exe, Windows security treats file as threat.<br>
+  (To resolve, right-click HoughScan.exe > properties > security > check 'unblock'> press apply)
   <li> Using .exe, startup time is slow (>10s).
   
   
