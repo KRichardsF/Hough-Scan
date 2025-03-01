@@ -1,4 +1,9 @@
-# Import only required components
+try:
+    import pyi_splash
+    HAS_PYI_SPLASH = True
+except ImportError:
+    HAS_PYI_SPLASH = False
+
 from fasthtml.common import *
 from fasthtml.svg import SvgInb, Circle
 from fasthtml.components import Defs, ClipPath, Rect, Image, G
@@ -6,7 +11,6 @@ from operation import CircleDetector, TileProcessor
 from PIL import Image as PILImage
 from components import button, menu, split, entry, selector
 
-# Standard libraries (keep minimal)
 from pathlib import Path
 import copy
 import socket
@@ -16,7 +20,7 @@ import io
 import base64
 import csv
 import sys
-import multiprocessing as mp
+from multiprocessing import freeze_support
 import threading
 import requests
 import webview
@@ -30,17 +34,10 @@ import sys
 import uvicorn
 from contextlib import asynccontextmanager
 import importlib
+from fastapi.responses import Response, FileResponse
 
-PYTHON_3_12_OR_LATER = sys.version_info >= (3, 12)
-
-if PYTHON_3_12_OR_LATER and os.getenv("PYTHONLAZYIMPORTS") != "1":
-    print("Enabling Lazy load...")
-    os.environ["PYTHONLAZYIMPORTS"] = "1"
-# Add a global server variable
 server = None
 
-# Added for downloadable responses
-from fastapi.responses import Response, FileResponse
 
 def find_available_port(starting_port=5001, max_attempts=10):
     """Finds an available port starting from `starting_port`."""
@@ -53,6 +50,8 @@ def find_available_port(starting_port=5001, max_attempts=10):
 # Find an available port at runtime
 PORT = find_available_port()
 
+def ft_path(*c, target_id=None, **kwargs):
+    return ft_hx('path', *c, target_id=target_id, **kwargs)
 
 def scan_name_generator():
     count = 1
@@ -161,7 +160,8 @@ def home():
                         entry.number_input(
                             'Tile Size',
                             current_value=current_settings.active_parameters.tile_size,
-                            maximum_value=1000,
+                            maximum_value=6000,
+                            minimum_value=0,
                             id="tile-size-input",
                             hx_post="/parameter-updated",
                             hx_trigger="change, click",
@@ -169,8 +169,30 @@ def home():
                             hx_swap="none",
                             **{':hx-vals': 'JSON.stringify({ val: currentVal, name:"tile_size" })'}
                         ),
-                        entry.number_input('Tile Overlap', current_value=current_settings.active_parameters.tile_overlap),
-                        entry.number_input('Doubles removal distance', current_value=current_settings.active_parameters.doubles_removal_distance),
+                        entry.number_input(
+                            'Tile Overlap', 
+                            current_value=current_settings.active_parameters.tile_overlap,
+                            maximum_value=2000,
+                            minimum_value=0,
+                            id="overlap-input",
+                            hx_post="/parameter-updated",
+                            hx_trigger="change, click",
+                            hx_target="this",
+                            hx_swap="none",
+                            **{':hx-vals': 'JSON.stringify({ val: currentVal, name:"tile_overlap" })'}
+                            ),
+                        entry.number_input(
+                            'Doubles removal distance', 
+                            current_value=current_settings.active_parameters.doubles_removal_distance,
+                            maximum_value=2000,
+                            minimum_value=0,
+                            id="doubles-removal-input",
+                            hx_post="/parameter-updated",
+                            hx_trigger="change, click",
+                            hx_target="this",
+                            hx_swap="none",
+                            **{':hx-vals': 'JSON.stringify({ val: currentVal, name:"doubles_removal_distance" })'}
+                            ),
                         cls="flex flex-row h-40 items-center justify-evenly",
                     ),
                     cls="flex flex-col",
@@ -325,8 +347,12 @@ def export_json():
         webview.SAVE_DIALOG,
         file_types=["JSON (*.json)"]
     )
+
+    if isinstance(file_path, (tuple, list)):  # Ensure correct handling
+        file_path = file_path[0] if file_path else None
+    
     if file_path:
-        file_path = next(iter(file_path), None)
+        file_path = Path(file_path).resolve()  # Fix for Windows paths
         export_data = {
             "image_path": current_settings.image_path,
             "scans":{}
@@ -484,8 +510,8 @@ def process_button_pressed():
             "Processing Image",
             Div(cls="p-2"),
             Svg(
-            Path(d='M12,1A11,11,0,1,0,23,12,11,11,0,0,0,12,1Zm0,19a8,8,0,1,1,8-8A8,8,0,0,1,12,20Z', opacity='.25'),
-            Path(d='M10.14,1.16a11,11,0,0,0-9,8.92A1.59,1.59,0,0,0,2.46,12,1.52,1.52,0,0,0,4.11,10.7a8,8,0,0,1,6.66-6.61A1.42,1.42,0,0,0,12,2.69h0A1.57,1.57,0,0,0,10.14,1.16Z'),
+            ft_path(d='M12,1A11,11,0,1,0,23,12,11,11,0,0,0,12,1Zm0,19a8,8,0,1,1,8-8A8,8,0,0,1,12,20Z', opacity='.25'),
+            ft_path(d='M10.14,1.16a11,11,0,0,0-9,8.92A1.59,1.59,0,0,0,2.46,12,1.52,1.52,0,0,0,4.11,10.7a8,8,0,0,1,6.66-6.61A1.42,1.42,0,0,0,12,2.69h0A1.57,1.57,0,0,0,10.14,1.16Z'),
             xmlns='http://www.w3.org/2000/svg',
             viewbox='0 0 24 24',
             aria_hidden='true',
@@ -518,7 +544,10 @@ def image_returned_success():
 def process_image():
     print("Processing image...")
     all_cirlces_overlay = []
-    tile_processor = TileProcessor(np.array(current_settings.image.convert('L')))
+    tile_processor = TileProcessor(np.array(current_settings.image.convert('L')), 
+                                   tile_size=current_settings.active_parameters.tile_size, 
+                                   overlap=current_settings.active_parameters.tile_overlap)
+
     for i in current_settings.scan_parameters:
         circles = []
         detected_circles = tile_processor.process_tiles_parallel(
@@ -612,10 +641,12 @@ def run_server():
     server_thread.start()
 
     # Wait until the server is available before continuing
-    time.sleep(2)  # Give the server time to start
+    time.sleep(0.5)  # Give the server time to start
 
     try:
         wait_for_server("http://127.0.0.1:5001")
+        if HAS_PYI_SPLASH:
+            pyi_splash.close()
     except Exception as e:
         print(f"Server failed to start: {e}")
         sys.exit(1)
@@ -633,8 +664,7 @@ def on_window_close():
 # Modify your main block
 if __name__ == '__main__':
     # Only apply on Windows and only in main process
-    if platform.system() == "Windows":
-        mp.set_start_method("spawn", force=True)  # Prevents re-execution loops # Explicitly setting start method
+    freeze_support()
     
     server_thread = threading.Thread(target=run_server, daemon=True)
     server_thread.start()
