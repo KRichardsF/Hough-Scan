@@ -8,38 +8,36 @@ Application for detection and data extraction of circular objects, such as emuls
   
 <h3> Contents </h3>
 <ul> 
-  <li><a href="#Installation"> Installation (.exe file)
-  <li><a href="#Installation"> Installation (Developer Build)
-  <li><a href="#Dependencies"> Dependencies
+  <li><a href="#Installation_exe"> Installation (.exe file)
+  <li><a href="#Installation_source"> Installation (from source)
   <li><a href="#User Guide"> User Guide
   <li><a href="#Planned Updates"> Planned Updates
+  <li><a href="#Examples"> Examples
   <li><a href="#Theory"> Theory
   <li><a href=""> Changelog
+  <li><a href=""> Known Issues
     </ul>
   
- <h2><a name="Installation"> Installation (.exe file)</a></h2>
+ <h2><a name="Installation_exe"> Installation (.exe file)</a></h2>
  <h3> Windows </h3>
  <ul>
     <li> Download the latest zip file found <a href="https://github.com/KRichardsF/Hough-Scan/releases">here</a> 
     <li> Extract the file to an appropriate folder (i.e c:program files/hough-scan)
-    <li> (optional) copy and paste a shortcut to "houghscan.exe your desktop/start menu
+    <li> (optional) copy and paste a shortcut for "houghscan.exe" to your desktop/start menu
     <li> Double click "houghscan.exe" to run the program
  </ul>
  
-<h2><a name="Installation"> Installation (Developer Build)</a></h2>
- 
-
+<h2><a name="Installation_source"> Installation (from source)</a></h2>
 <h3> Winows / linux </h3>
 <ul>
-   <li>Install dependencies<br>
-   <li>Navigate to Hough-Scan directory in terminal and run:
-   <code> Python main.py </code>
+  <li>Check that you have python installed</li>
+  <li>Clone files using <code>git clone https://github.com/KRichardsF/Hough-Scan/</code> or by downloading them from web browser.
+   <li>Navigate to the build folder and install dependenceies using <code>pip install -r requirements.txt</code>
+<br>
+   <li>Navigate to Main Hough-Scan directory in terminal and run:
+   <code>Python main.py</code>
 </ul>
 
-
-
-<h2><a name="Dependencies"> Dependencies </a></h2>
-<li> See build > requirements.txt 
   
 <h2><a name="User Guide"> User Guide </a></h2>
 <img src="./Readme_Images/Screenshot.png" width="50%" height="50%">
@@ -60,11 +58,16 @@ Application for detection and data extraction of circular objects, such as emuls
 <li> Show circle size histogram
   </ul>
 
-<h2><a name="Recent Changes"> Recent Changes </a></h2>
-<ul>
-<li> Remade application using web UI
-</ul>
 
+
+<h2><a name="Examples"> Examples </a></h2>
+<ul>
+<li> Kieran Richards, Ella Comish, Rachel Evans, 
+ <i>Computer vision for high-throughput analysis of Pickering emulsions</i>, Soft Matter, 2025, <a href="https://pubs.rsc.org/en/content/articlelanding/2025/sm/d4sm01252f"> DOI: 10.1039/D4SM01252F </a>
+</a></li>
+
+
+</ul>
 
 <h2><a name="Theory"> Theory </a></h2>
 <p> For more information on the image manipulation processes, please visit https://opencv.org/ . Below we have summarised some of the processes performed by the OpenCV library in order to give the user a better idea what each of the parameters used in this software do. </p>
@@ -111,4 +114,12 @@ Application for detection and data extraction of circular objects, such as emuls
   <li> 07AUG20: Tile by Percentage Overlap added
   <li> 07AUG20 Separate tile sizes for different runs
   <li> 8JUL20: uploaded early dev build
+</ul>
+
+<h2><a name="Known Issues"> Known Issues </a></h2>
+<ul>
+  <li> Using .exe, Windows security treats file as threat. (click more> run anyway to resolve)
+  <li> Using .exe, startup time is slow (>10s).
+  
+  
 </ul>
