@@ -1,4 +1,9 @@
-import pyi_splash
+try:
+    import pyi_splash
+    HAS_PYI_SPLASH = True
+except ImportError:
+    HAS_PYI_SPLASH = False
+
 from fasthtml.common import *
 from fasthtml.svg import SvgInb, Circle
 from fasthtml.components import Defs, ClipPath, Rect, Image, G
@@ -29,11 +34,10 @@ import sys
 import uvicorn
 from contextlib import asynccontextmanager
 import importlib
+from fastapi.responses import Response, FileResponse
 
 server = None
 
-# Added for downloadable responses
-from fastapi.responses import Response, FileResponse
 
 def find_available_port(starting_port=5001, max_attempts=10):
     """Finds an available port starting from `starting_port`."""
@@ -46,6 +50,8 @@ def find_available_port(starting_port=5001, max_attempts=10):
 # Find an available port at runtime
 PORT = find_available_port()
 
+def ft_path(*c, target_id=None, **kwargs):
+    return ft_hx('path', *c, target_id=target_id, **kwargs)
 
 def scan_name_generator():
     count = 1
@@ -154,7 +160,7 @@ def home():
                         entry.number_input(
                             'Tile Size',
                             current_value=current_settings.active_parameters.tile_size,
-                            maximum_value=1000,
+                            maximum_value=6000,
                             id="tile-size-input",
                             hx_post="/parameter-updated",
                             hx_trigger="change, click",
@@ -318,8 +324,12 @@ def export_json():
         webview.SAVE_DIALOG,
         file_types=["JSON (*.json)"]
     )
+
+    if isinstance(file_path, (tuple, list)):  # Ensure correct handling
+        file_path = file_path[0] if file_path else None
+    
     if file_path:
-        file_path = next(iter(file_path), None)
+        file_path = Path(file_path).resolve()  # Fix for Windows paths
         export_data = {
             "image_path": current_settings.image_path,
             "scans":{}
@@ -477,8 +487,8 @@ def process_button_pressed():
             "Processing Image",
             Div(cls="p-2"),
             Svg(
-            Path(d='M12,1A11,11,0,1,0,23,12,11,11,0,0,0,12,1Zm0,19a8,8,0,1,1,8-8A8,8,0,0,1,12,20Z', opacity='.25'),
-            Path(d='M10.14,1.16a11,11,0,0,0-9,8.92A1.59,1.59,0,0,0,2.46,12,1.52,1.52,0,0,0,4.11,10.7a8,8,0,0,1,6.66-6.61A1.42,1.42,0,0,0,12,2.69h0A1.57,1.57,0,0,0,10.14,1.16Z'),
+            ft_path(d='M12,1A11,11,0,1,0,23,12,11,11,0,0,0,12,1Zm0,19a8,8,0,1,1,8-8A8,8,0,0,1,12,20Z', opacity='.25'),
+            ft_path(d='M10.14,1.16a11,11,0,0,0-9,8.92A1.59,1.59,0,0,0,2.46,12,1.52,1.52,0,0,0,4.11,10.7a8,8,0,0,1,6.66-6.61A1.42,1.42,0,0,0,12,2.69h0A1.57,1.57,0,0,0,10.14,1.16Z'),
             xmlns='http://www.w3.org/2000/svg',
             viewbox='0 0 24 24',
             aria_hidden='true',
@@ -609,7 +619,8 @@ def run_server():
 
     try:
         wait_for_server("http://127.0.0.1:5001")
-        pyi_splash.close()
+        if HAS_PYI_SPLASH:
+            pyi_splash.close()
     except Exception as e:
         print(f"Server failed to start: {e}")
         sys.exit(1)
