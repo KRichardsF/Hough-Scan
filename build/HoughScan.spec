@@ -32,7 +32,7 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon=['/static/icons/Houghscan Icon.ico'],
+    icon=['./static/icons/icon.ico'],
 )
 coll = COLLECT(
     exe,

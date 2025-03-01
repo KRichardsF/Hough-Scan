@@ -25,18 +25,17 @@ import numpy as np
 from dataclasses import dataclass
 from typing import Optional
 import signal
+import platform
 import sys
 import uvicorn
 from contextlib import asynccontextmanager
 import importlib
 
-# Check if Python 3.12+ is available
 PYTHON_3_12_OR_LATER = sys.version_info >= (3, 12)
 
-if PYTHON_3_12_OR_LATER:
-    sys.flags.lazy_imports = 1  # Enable built-in lazy imports in Python 3.12+
-
-
+if PYTHON_3_12_OR_LATER and os.getenv("PYTHONLAZYIMPORTS") != "1":
+    print("Enabling Lazy load...")
+    os.environ["PYTHONLAZYIMPORTS"] = "1"
 # Add a global server variable
 server = None
 
@@ -633,7 +632,9 @@ def on_window_close():
 
 # Modify your main block
 if __name__ == '__main__':
-    mp.set_start_method("spawn")  # Explicitly setting start method
+    # Only apply on Windows and only in main process
+    if platform.system() == "Windows":
+        mp.set_start_method("spawn", force=True)  # Prevents re-execution loops # Explicitly setting start method
     
     server_thread = threading.Thread(target=run_server, daemon=True)
     server_thread.start()
