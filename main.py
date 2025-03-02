@@ -585,7 +585,6 @@ def process_image():
             # If processing was canceled, return early with full cleanup
             if cancel_event.is_set():
                 print("🔴 Processing stopped due to cancellation.")
-                tile_processor_instance.cleanup_executor()  # 🔹 Ensure executor is cleaned up
                 processing_active = False  # 🔹 Only set False after cleanup
                 return Div()  
 
@@ -605,7 +604,6 @@ def process_image():
     except Exception as e:
         print(f"⚠️ Error during processing: {e}")
     finally:
-        tile_processor_instance.cleanup_executor()  # 🔹 Ensure cleanup no matter what
         processing_active = False  # 🔹 Make sure we properly mark processing as stopped
 
     return [j for i in all_cirlces_overlay for j in i] + [
@@ -685,6 +683,7 @@ def update_preview():
             hough_threshold=i.hough_threshold,
             min_radius=i.minimum_radius,
             max_radius=i.maximum_radius,
+            timeout=5
         )
         [circle_svg_overlay.append(SvgInb(
             Circle(cx=j[0]*scale, cy=j[1]*scale, r=j[2]*scale,
