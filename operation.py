@@ -5,8 +5,12 @@ from typing import List, Tuple, Union
 import numpy as np
 from itertools import combinations
 import cv2
+from multiprocessing import Event
 
 np.set_printoptions(threshold=np.inf)
+
+# Global event for cancellation
+cancel_event = Event()
 
 class CircleDetector:
     @staticmethod
@@ -22,7 +26,6 @@ class CircleDetector:
 
 class TileProcessor:
     def __init__(self, image: np.ndarray, tile_size: int = 800, overlap: int = 0):
-        """TileProcessor object containing given parameters for tiling and functions to tile and process an image"""
         self.image = image
         self.height, self.width = self.image.shape[:2]
         self.tile_size = tile_size
@@ -48,17 +51,20 @@ class TileProcessor:
                 tiles.append(self.Tile(i, j, img))
         return tiles
 
-    def apply_function_and_position(self, function: callable, args: Tuple, kwargs: dict, tile: Tile) -> np.ndarray:
-        """Apply a function to a tile and return result (circles) ajusted for any positioning needed wrt the larger image"""
-        x_offset, y_offset, img = [tile.x, tile.y, tile.img]
+    def apply_function_and_position(self, function: callable, args: Tuple, kwargs: dict, tile) -> np.ndarray:
+        x_offset, y_offset, img = tile.x, tile.y, tile.img
+
+        if cancel_event.is_set():  # Stop processing immediately if canceled
+            return np.empty((0, 3), int)
+
         try:    
             tile_result = function(img, *args, **kwargs)
             if isinstance(tile_result, (np.ndarray, np.generic)):
-                tile_result = self.position_circles(tile_result, x_offset, y_offset)
-                return tile_result
+                return self.position_circles(tile_result, x_offset, y_offset)
         except Exception as e:
             print(f"Error: {e}")
-            return None
+
+        return np.empty((0, 3), int)
     
     def position_circles(self, tile_result: np.ndarray, x_offset: int, y_offset:int):
         """Offsets circle location according to tile position"""
@@ -82,19 +88,117 @@ class TileProcessor:
         valid_indices = np.where(~marked_for_removal)[0]
         return circles[valid_indices]
     
+import concurrent.futures
+import math
+import numpy as np
+import cv2
+from multiprocessing import Event
+
+# 🔹 Global event for cancellation
+cancel_event = Event()
+
+def apply_function_and_position(function, args, kwargs, tile):
+    """Standalone function to apply detection and adjust positions (picklable)."""
+    x_offset, y_offset, img = tile
+
+    if cancel_event.is_set():
+        return np.empty((0, 3), int)  # Return empty array if canceled
+
+    try:
+        tile_result = function(img, *args, **kwargs)
+        if isinstance(tile_result, np.ndarray) and tile_result.shape[0] > 0:
+            tile_result[:, 0] += x_offset  # Adjust X coordinates
+            tile_result[:, 1] += y_offset  # Adjust Y coordinates
+            return tile_result
+    except Exception as e:
+        print(f"⚠️ Error processing tile at ({x_offset}, {y_offset}): {e}")
+
+    return np.empty((0, 3), int)
+
+class TileProcessor:
+    def __init__(self, image: np.ndarray, tile_size: int = 800, overlap: int = 0):
+        self.image = image
+        self.height, self.width = self.image.shape[:2]
+        self.tile_size = tile_size
+        self.overlap = overlap
+        self.no_tiles_x = math.ceil(self.width / (self.tile_size - self.overlap))
+        self.no_tiles_y = math.ceil(self.height / (self.tile_size - self.overlap))
+        self.executor = None  # Store ProcessPoolExecutor as an instance variable
+
+    def split_into_tiles(self):
+        """Split the image into picklable tuples for multiprocessing."""
+        tiles = []
+        for i in range(self.no_tiles_x):
+            for j in range(self.no_tiles_y):
+                x_start = i * (self.tile_size - self.overlap)
+                y_start = j * (self.tile_size - self.overlap)
+                img = self.image[
+                    y_start:y_start + self.tile_size,
+                    x_start:x_start + self.tile_size
+                ]
+                tiles.append((x_start, y_start, img))  # 🔹 Store as picklable tuple
+        return tiles
+
+    def remove_overlapping_circles(self, circles: np.ndarray, separation: int = 10) -> np.ndarray:
+        """Remove overlapping circles resulting from tiling process."""
+        if circles.size == 0:
+            return circles  # Return empty array if no circles detected
+        
+        marked_for_removal = np.full(len(circles), False)
+
+        for i in range(len(circles)):
+            for j in range(i + 1, len(circles)):
+                if np.linalg.norm(circles[i, :2] - circles[j, :2]) < separation:
+                    marked_for_removal[i] = True
+
+        return circles[~marked_for_removal]
+
+    def cleanup_executor(self):
+        """Shut down and reset the executor to prevent lingering processes."""
+        if self.executor is not None:
+            print("🧹 Cleaning up executor...")
+            self.executor.shutdown(wait=True)
+            self.executor = None
+
     def process_tiles_parallel(self, function: callable, *args, **kwargs) -> np.ndarray:
-        """Tiles image and processes tiles in parallel using the specified function. Filters to correct for tiling and returns array of circles."""
-        start_time = time.perf_counter()
-        tiles = self.split_into_tiles()
+        """Processes image tiles in parallel and ensures cleanup after cancellation."""
+        tiles = self.split_into_tiles()  # 🔹 Now correctly calls `split_into_tiles()`
 
-        with concurrent.futures.ProcessPoolExecutor() as executor:
-            results = list(executor.map(self.apply_function_and_position, [function] * len(tiles), [args] * len(tiles), [kwargs] * len(tiles), tiles))
-        all_circles = np.concatenate(results, axis=0)
-        filtered_circles = self.remove_overlapping_circles(all_circles, separation=100)
+        # Ensure previous executor is cleaned up before starting a new one
+        self.cleanup_executor()
 
-        finish_time = time.perf_counter()
-        print(f'Processing finished in {finish_time - start_time:.2f} seconds')
-        return filtered_circles
+        # Create a fresh ProcessPoolExecutor
+        self.executor = concurrent.futures.ProcessPoolExecutor()
+
+        # Submit tasks with picklable arguments
+        future_to_tile = {
+            self.executor.submit(apply_function_and_position, function, args, kwargs, tile): tile
+            for tile in tiles
+        }
+
+        results = []
+        try:
+            for future in concurrent.futures.as_completed(future_to_tile):
+                if cancel_event.is_set():
+                    print("🔴 Processing canceled. Terminating workers immediately...")
+                    self.cleanup_executor()
+                    return np.empty((0, 3), int)
+
+                result = future.result()
+                results.append(result)
+
+        except Exception as e:
+            print(f"⚠️ Error in processing: {e}")
+            self.cleanup_executor()
+            return np.empty((0, 3), int)
+
+        if cancel_event.is_set():
+            print("🔴 Processing stopped. Returning empty result.")
+            self.cleanup_executor()
+            return np.empty((0, 3), int)
+
+        all_circles = np.concatenate(results, axis=0) if results else np.empty((0, 3), int)
+        return self.remove_overlapping_circles(all_circles, separation=100)
 
 
 def main():

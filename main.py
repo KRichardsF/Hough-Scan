@@ -7,7 +7,8 @@ except ImportError:
 from fasthtml.common import *
 from fasthtml.svg import SvgInb, Circle
 from fasthtml.components import Defs, ClipPath, Rect, Image, G
-from operation import CircleDetector, TileProcessor
+from operation import CircleDetector, TileProcessor, cancel_event
+
 from PIL import Image as PILImage
 from components import button, menu, split, entry, selector
 
@@ -35,9 +36,13 @@ import uvicorn
 from contextlib import asynccontextmanager
 import importlib
 from fastapi.responses import Response, FileResponse
+from fastapi import BackgroundTasks
 
 server = None
 
+processing_active = False
+# Store a reference to the tile processor so we can cancel it
+tile_processor_instance = None
 
 def find_available_port(starting_port=5001, max_attempts=10):
     """Finds an available port starting from `starting_port`."""
@@ -508,6 +513,12 @@ def process_button_pressed():
     return (
         Button(
             "Processing Image",
+            Div(
+                hx_post="/process_image",
+                hx_swap="innerHTML",
+                hx_trigger="load",
+                hx_target="#circle-overlay-main",
+            ),
             Div(cls="p-2"),
             Svg(
             ft_path(d='M12,1A11,11,0,1,0,23,12,11,11,0,0,0,12,1Zm0,19a8,8,0,1,1,8-8A8,8,0,0,1,12,20Z', opacity='.25'),
@@ -518,10 +529,9 @@ def process_button_pressed():
             cls='size-5 fill-on-surface motion-safe:animate-spin dark:fill-on-surface-dark'
             ),
             type="button",
-            hx_post="/process_image",
-            hx_swap="innerHTML",
-            hx_trigger="load",
-            hx_target="#circle-overlay-main",
+            hx_post="/cancel_button_pressed",
+            hx_swap="outerHTML",
+            hx_trigger="click",
             id="loading-button",
             cls="inline-flex items-center justify-center px-4 py-2 text-sm font-medium tracking-wide transition-colors duration-100 rounded-md text-neutral-500 bg-red-50 focus:ring-2 focus:ring-offset-2 focus:ring-neutral-100 h-12",
         ),
@@ -540,40 +550,110 @@ def image_returned_success():
         ),
     )
 
+
 @app.post("/process_image")
 def process_image():
+    global tile_processor_instance
+    global processing_active
     print("Processing image...")
-    all_cirlces_overlay = []
-    tile_processor = TileProcessor(np.array(current_settings.image.convert('L')), 
-                                   tile_size=current_settings.active_parameters.tile_size, 
-                                   overlap=current_settings.active_parameters.tile_overlap)
 
-    for i in current_settings.scan_parameters:
-        circles = []
-        detected_circles = tile_processor.process_tiles_parallel(
-            CircleDetector.detect_circles,
-            blur=i.blur,
-            dp=1,
-            min_dist=i.minimum_distance,
-            canny_upper=i.canny_upper_limit,
-            hough_threshold=i.hough_threshold,
-            min_radius=i.minimum_radius,
-            max_radius=i.maximum_radius
-        )
-        i.detected_circles = detected_circles
-        circles.append(detected_circles)
-        print(circles)
-        circle_svg_overlay = [
-            [SvgInb(Circle(cx=j[0], cy=j[1], r=j[2], fill="none", stroke=i.scan_color, stroke_width=5, stroke_opacity="1"),
-                      height=f"{tile_processor.height}px",
-                      width=f"{tile_processor.width}px")
-             for j in tile]
-            for tile in circles
-        ]
-        all_cirlces_overlay.append(circle_svg_overlay)
+    # Reset the cancellation event at the start of processing
+    cancel_event.clear()  
+    processing_active = True  
+
+    all_cirlces_overlay = []
+    tile_processor_instance = TileProcessor(
+        np.array(current_settings.image.convert('L')), 
+        tile_size=current_settings.active_parameters.tile_size, 
+        overlap=current_settings.active_parameters.tile_overlap
+    )
+
+    try:
+        for i in current_settings.scan_parameters:
+            circles = []
+            detected_circles = tile_processor_instance.process_tiles_parallel(
+                CircleDetector.detect_circles,
+                blur=i.blur,
+                dp=1,
+                min_dist=i.minimum_distance,
+                canny_upper=i.canny_upper_limit,
+                hough_threshold=i.hough_threshold,
+                min_radius=i.minimum_radius,
+                max_radius=i.maximum_radius
+            )
+
+            # If processing was canceled, return early with full cleanup
+            if cancel_event.is_set():
+                print("🔴 Processing stopped due to cancellation.")
+                tile_processor_instance.cleanup_executor()  # 🔹 Ensure executor is cleaned up
+                processing_active = False  # 🔹 Only set False after cleanup
+                return Div()  
+
+            i.detected_circles = detected_circles
+            circles.append(detected_circles)
+            print(circles)
+
+            circle_svg_overlay = [
+                [SvgInb(Circle(cx=j[0], cy=j[1], r=j[2], fill="none", stroke=i.scan_color, stroke_width=5, stroke_opacity="1"),
+                          height=f"{tile_processor_instance.height}px",
+                          width=f"{tile_processor_instance.width}px")
+                 for j in tile]
+                for tile in circles
+            ]
+            all_cirlces_overlay.append(circle_svg_overlay)
+
+    except Exception as e:
+        print(f"⚠️ Error during processing: {e}")
+    finally:
+        tile_processor_instance.cleanup_executor()  # 🔹 Ensure cleanup no matter what
+        processing_active = False  # 🔹 Make sure we properly mark processing as stopped
+
     return [j for i in all_cirlces_overlay for j in i] + [
         Div(hx_post="/image-returned-success", hx_swap="outerHTML", hx_trigger="load", hx_target="#loading-button")
     ]
+
+
+
+@app.post("/cancel_button_pressed")
+def cancel_processing_request():
+    """trigger cancel process"""
+    return (
+        Button(
+            "Stopping...",
+            type="button",
+            hx_trigger="load",
+            hx_swap="outerHTML",
+            hx_post="/cancel_success",
+            cls="inline-flex items-center justify-center px-4 py-2 text-sm font-medium tracking-wide transition-colors duration-100 rounded-md text-neutral-500 bg-red-50 focus:ring-2 focus:ring-offset-2 focus:ring-neutral-100 hover:text-neutral-600 hover:bg-neutral-100 h-12",
+        ),
+    )
+
+
+@app.post("/cancel_success")
+def cancel_success():
+    """Cancel the currently running image processing and return as soon as it stops."""
+    
+    print("Cancel request received. Waiting for processing to stop...")
+
+    # Set the cancellation event
+    cancel_event.set()
+
+    # Wait until processing_active is False
+    while processing_active:
+        time.sleep(0.1)  # Shorter sleep for faster response
+
+    print("Processing has stopped. Returning button.")
+
+    return (
+        Button(
+            "Run Scan",
+            type="button",
+            hx_swap="outerHTML",
+            hx_post="/process_button_pressed",
+            cls="inline-flex items-center justify-center px-4 py-2 text-sm font-medium tracking-wide transition-colors duration-100 rounded-md text-neutral-500 bg-neutral-50 focus:ring-2 focus:ring-offset-2 focus:ring-neutral-100 hover:text-neutral-600 hover:bg-neutral-100 h-12",
+        ),
+    )
+
 
 @app.post("/image_clicked")
 def image_clicked(preview_width: Optional[int] = None, preview_height: Optional[int] = None,
@@ -631,7 +711,7 @@ def run_server():
     """Run FastAPI's Uvicorn server in a separate thread with proper shutdown."""
     global server
     
-    config = uvicorn.Config(app, host="127.0.0.1", port=5001, log_level="info")
+    config = uvicorn.Config(app, host="127.0.0.1", port=PORT, log_level="info")
     server = uvicorn.Server(config)
     
     server_thread = threading.Thread(
@@ -644,7 +724,7 @@ def run_server():
     time.sleep(0.5)  # Give the server time to start
 
     try:
-        wait_for_server("http://127.0.0.1:5001")
+        wait_for_server(f"http://127.0.0.1:{PORT}")
         if HAS_PYI_SPLASH:
             pyi_splash.close()
     except Exception as e:
@@ -670,7 +750,7 @@ if __name__ == '__main__':
     server_thread.start()
     
     try:
-        wait_for_server("http://127.0.0.1:5001")
+        wait_for_server(f"http://127.0.0.1:{PORT}")
     except Exception as e:
         print(f"Error: {e}")
         sys.exit(1)
@@ -678,7 +758,7 @@ if __name__ == '__main__':
     # Create window with the close callback
     window = webview.create_window(
         "Hough Scan", 
-        "http://127.0.0.1:5001", 
+        f"http://127.0.0.1:{PORT}", 
         width=1200, 
         height=800, 
         zoomable=True
