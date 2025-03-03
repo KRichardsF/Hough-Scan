@@ -30,8 +30,9 @@ Application for detection and data extraction of circular objects, such as emuls
 <h2><a name="Installation_source"> Installation (from source)</a></h2>
 <h3> Winows / linux </h3>
 <ul>
-  <li>Check that you have python installed</li>
+  <li>Check that you have python installed (>12.0) </li>
   <li>Clone files using <code>git clone https://github.com/KRichardsF/Hough-Scan/</code> or by downloading them from web browser.
+  <li> (Recommended) Create a new virtual environment (see <a href='https://realpython.com/python-virtual-environments-a-primer/'> here</a>)
    <li>Navigate to the build folder and install dependenceies using <code>pip install -r requirements.txt</code>
 <br>
    <li>Navigate to Main Hough-Scan directory in terminal and run:
