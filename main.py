@@ -333,7 +333,10 @@ def parameter_updated(val: Optional[int] = None, name: Optional[str] = None):
 def process_button_pressed():
     return (
         Button(
-            "Processing Image",
+            Div(
+            "Processing Image \n(click to cancel)",
+            style = "white-space:pre"
+            ),
             Div(
                 hx_post="/process_image",
                 hx_swap="innerHTML",
@@ -354,7 +357,7 @@ def process_button_pressed():
             hx_swap="outerHTML",
             hx_trigger="click",
             id="loading-button",
-            cls="inline-flex items-center justify-center px-4 py-2 text-sm font-medium tracking-wide transition-colors duration-100 rounded-md text-neutral-500 bg-red-50 focus:ring-2 focus:ring-offset-2 focus:ring-neutral-100 h-12",
+            cls="inline-flex items-center justify-center px-4 py-2 text-sm font-medium tracking-wide transition-colors duration-100 rounded-md text-neutral-500 bg-red-50 focus:ring-2 focus:ring-offset-2 focus:ring-red-100 h-12",
         ),
     )
 
@@ -437,7 +440,7 @@ def cancel_processing_request():
             hx_trigger="load",
             hx_swap="outerHTML",
             hx_post="/cancel_success",
-            cls="inline-flex items-center justify-center px-4 py-2 text-sm font-medium tracking-wide transition-colors duration-100 rounded-md text-neutral-500 bg-red-50 focus:ring-2 focus:ring-offset-2 focus:ring-neutral-100 hover:text-neutral-600 hover:bg-neutral-100 h-12",
+            cls="inline-flex items-center justify-center px-4 py-2 text-sm font-medium tracking-wide transition-colors duration-100 rounded-md text-neutral-500 bg-red-50 focus:ring-2 focus:ring-offset-2 focus:ring-neutral-100 hover:text-neutral-600 hover:bg-red-100 h-12",
         ),
     )
 
@@ -567,7 +570,7 @@ if __name__ == '__main__':
         f"http://127.0.0.1:{PORT}", 
         width=1200, 
         height=800, 
-        zoomable=True
+        zoomable=True,
     )
     
     # Register the close event handler

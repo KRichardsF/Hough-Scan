@@ -48,7 +48,7 @@ def sidebar(current_settings, update_preview):
                     hx_post="/process_button_pressed",
                     cls="inline-flex items-center justify-center px-4 py-2 text-sm font-medium tracking-wide transition-colors duration-100 rounded-md text-neutral-500 bg-neutral-50 focus:ring-2 focus:ring-offset-2 focus:ring-neutral-100 hover:text-neutral-600 hover:bg-neutral-100 h-12",
                 ),
-                cls="flex flex-col px-5 py-5",
+                cls="flex flex-col px-5 pb-3",
             ),
             cls="flex flex-col flex-auto border-gray-50",
             style="max-height: calc((100vh / var(--dynamic-scale)) - (40px / var(--dynamic-scale)));",

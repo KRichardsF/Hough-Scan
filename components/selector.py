@@ -31,7 +31,7 @@ def populate_selections(current_settings):
                         cls="px-5 py-4 text-sm whitespace-nowrap"
 
                 ),
-              cls = f"text-neutral-800 {'bg-purple-50' if current_settings.active_parameters is i else ''} flex overscroll-y-auto overflow-y-auto",
+              cls = f"text-neutral-800 {'bg-neutral-50' if current_settings.active_parameters is i else ''} flex overscroll-y-auto overflow-y-auto",
               hx_post="/select_scan",
               hx_trigger="click",
               hx_target="#sidebar",
@@ -128,7 +128,7 @@ def run_selector(current_settings, *args, **kwargs):
                             ),
                             cls = "flex flec-col overflow-hidden border rounded-lg overscroll-y-auto overflow-y-auto"
                         ),
-                        cls = "flex flex-col inline-block min-w-full overscroll-y-auto overflow-y-auto px-5"
+                        cls = "flex flex-col inline-block min-w-full overscroll-y-auto overflow-y-auto px-5 py-3"
                     ),
                     cls = "flex flex-col overflow-x-auto overscroll-y-auto overflow-y-auto"
                 ),
