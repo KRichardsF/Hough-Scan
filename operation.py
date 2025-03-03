@@ -1,8 +1,6 @@
 import math
 import time
-from typing import List, Tuple, Union
 import numpy as np
-from itertools import combinations
 import cv2
 from multiprocessing import Event
 from multiprocessing import Pool

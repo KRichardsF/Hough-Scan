@@ -1,4 +1,4 @@
-from fasthtml.common import *
+from fasthtml.common import Tr, Td, Input, Div, Table, Thead, Th, Tbody, Tfoot, Button, Svg, ft_hx
 
 def populate_selections(current_settings):
     selection_rows = []
