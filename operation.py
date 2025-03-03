@@ -13,6 +13,10 @@ np.set_printoptions(threshold=np.inf)
 
 # Global event for cancellation
 cancel_event = Event()
+def init_worker():
+    # This properly imports the global cancel_event into the worker process
+    global cancel_event
+    # No need to set any attributes
 
 class CircleDetector:
     @staticmethod
@@ -111,7 +115,6 @@ class TileProcessor:
 
     def process_tiles_parallel(self, function: callable, *args, **kwargs) -> np.ndarray:
         """Processes image tiles in parallel and ensures cleanup after cancellation."""
-
         
         # Create a wrapped function with fixed parameters
         worker_func = partial(apply_function_and_position, function, args, kwargs)
@@ -119,46 +122,44 @@ class TileProcessor:
         tiles = self.split_into_tiles()
         
         # Make sure cancel_event is reset before starting a new run
-        # This is critical to allow subsequent runs
         cancel_event.clear()
         
-        # Create a fresh Pool for each run
-        pool = None
+        all_results = []
         
         try:
-            # Create a Pool with default number of processes
-            pool = Pool(initializer=lambda: setattr(cancel_event, 'is_set', cancel_event.is_set))
-            
-            # Start asynchronous processing
-            result_async = pool.map_async(worker_func, tiles)
-            
-            # Wait for results with timeout to check cancellation periodically
-            while not result_async.ready():
-                if cancel_event.is_set():
-                    print("🔴 Processing canceled. Terminating workers immediately...")
-                    pool.terminate()
-                    pool.join()
-                    pool = None
-                    return np.empty((0, 3), int)
-                time.sleep(0.1)  # Small sleep to reduce CPU usage
-            
-            # Get all results
-            results = result_async.get()
-            
+            # Use 'spawn' context explicitly for Windows compatibility
+            with Pool(initializer=init_worker) as pool:
+                # Process in smaller batches to allow for cancellation checking
+                batch_size = max(1, len(tiles) // 10)  # Process ~10% at a time
+                for i in range(0, len(tiles), batch_size):
+                    batch = tiles[i:i+batch_size]
+                    
+                    # Start processing this batch
+                    result_async = pool.map_async(worker_func, batch)
+                    
+                    # Wait for results with timeout to check cancellation
+                    while not result_async.ready():
+                        if cancel_event.is_set():
+                            print("🔴 Processing canceled. Terminating workers...")
+                            pool.terminate()
+                            return np.empty((0, 3), int)
+                        time.sleep(0.1)
+                    
+                    # Add batch results
+                    batch_results = result_async.get()
+                    all_results.extend(batch_results)
+                    
+                    # Check for cancellation between batches
+                    if cancel_event.is_set():
+                        print("🔴 Processing canceled between batches...")
+                        return np.empty((0, 3), int)
+        
         except Exception as e:
             print(f"⚠️ Error in processing: {e}")
-            if pool:
-                pool.terminate()
-                pool.join()
             return np.empty((0, 3), int)
-        finally:
-            # Clean up properly
-            if pool:
-                pool.close()
-                pool.join()
         
         # Filter out empty results and concatenate
-        valid_results = [r for r in results if r.size > 0]
+        valid_results = [r for r in all_results if r.size > 0]
         all_circles = np.concatenate(valid_results, axis=0) if valid_results else np.empty((0, 3), int)
         return self.remove_overlapping_circles(all_circles, separation=100)
 
